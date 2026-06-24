@@ -7,6 +7,8 @@ let prevScreen = 'search';
 let currentWord = null;
 let ttsActive = false;
 let cachedVoice = null;
+let alphabetGroups = null;
+let wordMap = null;
 
 let reviewSession = {
   queue: [],
@@ -203,6 +205,24 @@ function escapeAttr(str) {
   return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function getWordMap() {
+  if (!wordMap) wordMap = new Map(SYNONYMS_DATA.map(item => [item.word, item]));
+  return wordMap;
+}
+
+function buildAlphaGroups() {
+  const sorted = [...SYNONYMS_DATA].sort((a, b) =>
+    a.word.toLowerCase().localeCompare(b.word.toLowerCase())
+  );
+  const groups = {};
+  sorted.forEach(item => {
+    const letter = item.word[0].toUpperCase();
+    if (!groups[letter]) groups[letter] = [];
+    groups[letter].push(item);
+  });
+  alphabetGroups = groups;
+}
+
 /* ===== Navigation ===== */
 function showScreen(screen) {
   stopTTS();
@@ -256,7 +276,7 @@ function initSearchScreen() {
 
 function renderSearchResults(results, query, container) {
   if (!query.trim()) {
-    container.innerHTML = '<div class="search-empty">输入词汇开始搜索<br><small style="opacity:0.6;font-size:12px;margin-top:6px;display:block;">支持前缀和模糊匹配</small></div>';
+    renderAlphaList(container);
     return;
   }
   if (results.length === 0) {
@@ -264,24 +284,40 @@ function renderSearchResults(results, query, container) {
     return;
   }
 
-  container.innerHTML = results.map(item => {
-    const sr = getWordSR(item.word);
-    const badge = sr ? '<span class="card-badge card-badge--added">已添加</span>' : '';
-    return `<div class="result-card" data-word="${escapeAttr(item.word)}">
-      <div class="card-main">
-        <span class="card-word">${escapeHtml(item.word)}</span>
-        ${badge}
-      </div>
-      <div class="card-sub">
-        <span class="card-zh">${escapeHtml(item.zh)}</span>
-        <span class="card-count">${item.synonyms.length} 个同义词</span>
-      </div>
-    </div>`;
-  }).join('');
+  const map = getWordMap();
+  container.innerHTML = results.map(item =>
+    `<div class="word-row" data-word="${escapeAttr(item.word)}">
+      <span class="row-word">${escapeHtml(item.word)}</span>
+      <span class="row-zh">${escapeHtml(item.zh)}</span>
+    </div>`
+  ).join('');
 
-  container.querySelectorAll('.result-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const wd = SYNONYMS_DATA.find(w => w.word === card.dataset.word);
+  container.querySelectorAll('.word-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const wd = map.get(row.dataset.word);
+      if (wd) showDetail(wd);
+    });
+  });
+}
+
+function renderAlphaList(container) {
+  if (!alphabetGroups) buildAlphaGroups();
+  const map = getWordMap();
+  const letters = Object.keys(alphabetGroups).sort();
+  let html = '';
+  letters.forEach(letter => {
+    html += `<div class="section-header">${letter}</div>`;
+    alphabetGroups[letter].forEach(item => {
+      html += `<div class="word-row" data-word="${escapeAttr(item.word)}">
+        <span class="row-word">${escapeHtml(item.word)}</span>
+        <span class="row-zh">${escapeHtml(item.zh)}</span>
+      </div>`;
+    });
+  });
+  container.innerHTML = html;
+  container.querySelectorAll('.word-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const wd = map.get(row.dataset.word);
       if (wd) showDetail(wd);
     });
   });
@@ -558,6 +594,10 @@ function init() {
     window.speechSynthesis.addEventListener('voiceschanged', initVoices);
     initVoices();
   }
+
+  // Pre-build alpha groups and word lookup map
+  buildAlphaGroups();
+  getWordMap();
 
   // Search
   initSearchScreen();

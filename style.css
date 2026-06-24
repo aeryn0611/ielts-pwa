@@ -622,3 +622,53 @@ body {
   margin: 0 20px;
   width: calc(100% - 40px);
 }
+
+/* ===== Alpha Word List (Search Screen) ===== */
+#search-results {
+  padding-bottom: 16px;
+}
+
+.section-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  color: #3D5A78;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 8px 16px 4px;
+}
+
+.word-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 16px;
+  min-height: 48px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.word-row:active { background: var(--surface); }
+
+.row-word {
+  font-size: 14px;
+  font-weight: 500;
+  color: #E8F4FF;
+  flex: 1;
+  min-width: 0;
+}
+
+.row-zh {
+  font-size: 12px;
+  color: #7FA8C9;
+  flex-shrink: 0;
+  max-width: 55%;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
