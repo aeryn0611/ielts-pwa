@@ -19,6 +19,8 @@ let reviewSession = {
 
 let mcSession = { wordPool: null, fromFlow: false, total: 0, correct: 0, currentQ: null };
 
+let spellSession = { words: [], current: 0, results: [], total: 0, bothCorrect: 0 };
+
 let flashSession = {
   words: [],
   count: 20,
@@ -241,6 +243,45 @@ function shuffleArray(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+function renderDiff(input, correct) {
+  const container = document.createElement('span');
+  container.style.cssText = 'font-size:20px;font-family:monospace;letter-spacing:0.05em;display:inline-block';
+  for (let i = 0; i < correct.length; i++) {
+    const span = document.createElement('span');
+    if (i < input.length && input[i] === correct[i]) {
+      span.style.color = '#E8F4FF';
+    } else {
+      span.style.color = '#EF4444';
+      span.style.textDecoration = 'underline';
+    }
+    span.textContent = correct[i];
+    container.appendChild(span);
+  }
+  for (let i = correct.length; i < input.length; i++) {
+    const span = document.createElement('span');
+    span.style.color = '#EF4444';
+    span.style.textDecoration = 'line-through';
+    span.textContent = input[i];
+    container.appendChild(span);
+  }
+  return container;
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = [];
+  for (let i = 0; i <= m; i++) { dp[i] = new Array(n + 1).fill(0); dp[i][0] = i; }
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    }
+  }
+  return dp[m][n];
 }
 
 /* ===== Navigation ===== */
@@ -622,6 +663,7 @@ function renderPracticeLanding() {
   document.getElementById('practice-header').innerHTML = '<h2 class="app-title">练习</h2>';
   const content = document.getElementById('practice-content');
   const mc = getPracticeStats('practice_mc') || { total: 0, correct: 0 };
+  const spell = getPracticeStats('practice_spell') || { total: 0, both_correct: 0 };
   content.innerHTML = `
     <div class="practice-landing">
       <div class="prac-mode-card" id="prac-mc-card">
@@ -640,9 +682,26 @@ function renderPracticeLanding() {
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </div>
+      <div class="prac-mode-card" id="prac-spell-card">
+        <div class="prac-mode-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
+          </svg>
+        </div>
+        <div class="prac-mode-body">
+          <div class="prac-mode-title">拼写</div>
+          <div class="prac-mode-desc">看中文拼出单词和一个同义词</div>
+          <div class="prac-mode-stat">今日: ${spell.total}题 / ${spell.both_correct}全对</div>
+        </div>
+        <svg class="prac-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
       <div class="prac-coming-soon">更多练习模式即将推出...</div>
     </div>`;
   document.getElementById('prac-mc-card').addEventListener('click', () => startMCMode(null, false));
+  document.getElementById('prac-spell-card').addEventListener('click', startSpellMode);
 }
 
 function startMCMode(wordPool, fromFlow) {
@@ -779,6 +838,235 @@ function confirmMCAnswer() {
 function updateMCStats() {
   const el = document.getElementById('prac-stats-bar');
   if (el) el.textContent = `本次: ${mcSession.total}题 / ${mcSession.correct}正确`;
+}
+
+/* ===== Spell Mode (拼写) ===== */
+
+function startSpellMode() {
+  spellSession.words = shuffleArray(
+    SYNONYMS_DATA.filter(w => w.synonyms.length >= 1)
+  ).slice(0, 20);
+  spellSession.current = 0;
+  spellSession.results = [];
+  spellSession.total = 0;
+  spellSession.bothCorrect = 0;
+  document.getElementById('practice-header').innerHTML = `
+    <div class="quiz-header-row">
+      <h2 class="quiz-title">拼写</h2>
+      <span class="spell-session-stat" id="spell-session-stat">本次: 0题 / 0全对</span>
+    </div>`;
+  renderSpellQuestion(0);
+}
+
+function updateSpellSessionStat() {
+  const el = document.getElementById('spell-session-stat');
+  if (el) el.textContent = `本次: ${spellSession.total}题 / ${spellSession.bothCorrect}全对`;
+}
+
+function renderSpellQuestion(index) {
+  if (index >= spellSession.words.length) { renderSpellComplete(); return; }
+  spellSession.current = index;
+  const wordData = spellSession.words[index];
+  const total = spellSession.words.length;
+  const pct = Math.round((index / total) * 100);
+  const content = document.getElementById('practice-content');
+  content.innerHTML = `
+    <div class="spell-progress-wrap">
+      <div class="spell-progress-bar"><div class="spell-progress-fill" style="width:${pct}%"></div></div>
+      <div class="spell-progress-label">${index + 1} / ${total}</div>
+    </div>
+    <div class="spell-card">
+      <div class="spell-step-label">第1步 · 拼出单词</div>
+      <div class="spell-zh-main">${escapeHtml(wordData.zh)}</div>
+      <input type="text" class="spell-input" id="spell-input" placeholder="输入英文单词..."
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+      <div class="spell-feedback" id="spell-feedback" style="display:none"></div>
+      <div class="spell-confirm-row">
+        <button class="spell-tts-btn" id="spell-tts-btn">🔊 听发音</button>
+        <button class="btn btn--primary spell-confirm-btn" id="spell-confirm-btn">确认</button>
+      </div>
+      <div id="spell-next-wrap" style="display:none">
+        <button class="btn btn--secondary" id="spell-next-btn">下一题 →</button>
+      </div>
+    </div>`;
+  document.getElementById('spell-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('spell-confirm-btn').click();
+  });
+  document.getElementById('spell-tts-btn').addEventListener('click', () => speakSingle(wordData.word));
+  document.getElementById('spell-confirm-btn').addEventListener('click', () => evaluateSpellStep1(wordData));
+}
+
+function evaluateSpellStep1(wordData) {
+  const inputEl = document.getElementById('spell-input');
+  if (!inputEl) return;
+  const userInput = inputEl.value.trim().toLowerCase();
+  if (!userInput) return;
+  const correct = wordData.word.toLowerCase();
+  const feedbackEl = document.getElementById('spell-feedback');
+  inputEl.disabled = true;
+  document.getElementById('spell-confirm-btn').disabled = true;
+  document.getElementById('spell-tts-btn').disabled = true;
+  feedbackEl.style.display = 'block';
+  if (userInput === correct) {
+    inputEl.style.borderColor = '#22C55E';
+    feedbackEl.innerHTML = `<span style="color:#22C55E;font-size:18px;font-weight:700">✓  ${escapeHtml(wordData.word)}</span>`;
+    speakSingle(wordData.word);
+    setTimeout(() => renderSpellStep2(wordData), 800);
+  } else {
+    inputEl.style.borderColor = '#EF4444';
+    const userLabelEl = document.createElement('div');
+    userLabelEl.style.cssText = 'font-size:12px;color:#7FA8C9;margin-bottom:4px';
+    userLabelEl.textContent = `你输入的：${userInput}`;
+    feedbackEl.innerHTML = '';
+    feedbackEl.appendChild(userLabelEl);
+    feedbackEl.appendChild(renderDiff(userInput, correct));
+    addWordAtInterval(wordData.word, 0);
+    const stats = getPracticeStats('practice_spell') || { total: 0, both_correct: 0 };
+    stats.total++;
+    setPracticeStats('practice_spell', stats);
+    spellSession.total++;
+    spellSession.results[spellSession.current] = 'step1_wrong';
+    updateSpellSessionStat();
+    document.getElementById('spell-next-wrap').style.display = 'block';
+    document.getElementById('spell-next-btn').addEventListener('click', () => renderSpellQuestion(spellSession.current + 1));
+  }
+}
+
+function renderSpellStep2(wordData) {
+  const total = spellSession.words.length;
+  const index = spellSession.current;
+  const pct = Math.round((index / total) * 100);
+  const content = document.getElementById('practice-content');
+  content.innerHTML = `
+    <div class="spell-progress-wrap">
+      <div class="spell-progress-bar"><div class="spell-progress-fill" style="width:${pct}%"></div></div>
+      <div class="spell-progress-label">${index + 1} / ${total}</div>
+    </div>
+    <div class="spell-card">
+      <div class="spell-step-label">第2步 · 拼出一个同义词</div>
+      <div class="spell-word-revealed">${escapeHtml(wordData.word)}</div>
+      <div class="spell-zh-sub">${escapeHtml(wordData.zh)}</div>
+      <div class="spell-hint">共 ${wordData.synonyms.length} 个同义词，拼出任意一个</div>
+      <input type="text" class="spell-input" id="spell-input" placeholder="输入任意一个同义词..."
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+      <div class="spell-feedback" id="spell-feedback" style="display:none"></div>
+      <div class="spell-confirm-row">
+        <button class="spell-tts-btn" id="spell-tts-btn">🔊 听发音</button>
+        <button class="btn btn--primary spell-confirm-btn" id="spell-confirm-btn">确认</button>
+      </div>
+      <div id="spell-next-wrap" style="display:none">
+        <button class="btn btn--secondary" id="spell-next-btn">下一题 →</button>
+      </div>
+    </div>`;
+  document.getElementById('spell-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('spell-confirm-btn').click();
+  });
+  document.getElementById('spell-tts-btn').addEventListener('click', () => speakSingle(wordData.word));
+  document.getElementById('spell-confirm-btn').addEventListener('click', () => evaluateSpellStep2(wordData));
+}
+
+function evaluateSpellStep2(wordData) {
+  const inputEl = document.getElementById('spell-input');
+  if (!inputEl) return;
+  const userInput = inputEl.value.trim().toLowerCase();
+  if (!userInput) return;
+  const synonymsLower = wordData.synonyms.map(s => s.toLowerCase());
+  const feedbackEl = document.getElementById('spell-feedback');
+  inputEl.disabled = true;
+  document.getElementById('spell-confirm-btn').disabled = true;
+  document.getElementById('spell-tts-btn').disabled = true;
+  feedbackEl.style.display = 'block';
+  const matchIdx = synonymsLower.indexOf(userInput);
+  if (matchIdx !== -1) {
+    const typedSynonym = wordData.synonyms[matchIdx];
+    inputEl.style.borderColor = '#22C55E';
+    feedbackEl.innerHTML = `<span style="color:#22C55E;font-size:18px;font-weight:700">✓  ${escapeHtml(typedSynonym)}</span>`;
+    speakSingle(typedSynonym);
+    addWordAtInterval(wordData.word, 1);
+    const stats = getPracticeStats('practice_spell') || { total: 0, both_correct: 0 };
+    stats.total++;
+    stats.both_correct++;
+    setPracticeStats('practice_spell', stats);
+    spellSession.total++;
+    spellSession.bothCorrect++;
+    spellSession.results[spellSession.current] = 'both_correct';
+    updateSpellSessionStat();
+    setTimeout(() => {
+      const fb = document.getElementById('spell-feedback');
+      if (!fb) return;
+      const chipsHtml = wordData.synonyms.map(s => {
+        const hl = s.toLowerCase() === userInput ? 'border-color:#22C55E' : '';
+        return `<span class="spell-chip" style="${hl}">${escapeHtml(s)}</span>`;
+      }).join('');
+      fb.innerHTML += `<div class="spell-chips" style="margin-top:8px">${chipsHtml}</div>`;
+    }, 600);
+    setTimeout(() => renderSpellQuestion(spellSession.current + 1), 1200);
+  } else {
+    let closest = wordData.synonyms[0];
+    let minDist = Infinity;
+    for (const syn of wordData.synonyms) {
+      const dist = levenshtein(userInput, syn.toLowerCase());
+      if (dist < minDist || (dist === minDist && syn.length < closest.length)) {
+        minDist = dist;
+        closest = syn;
+      }
+    }
+    inputEl.style.borderColor = '#EF4444';
+    const userLabelEl = document.createElement('div');
+    userLabelEl.style.cssText = 'font-size:12px;color:#7FA8C9;margin-bottom:4px';
+    userLabelEl.textContent = `你输入的：${userInput}`;
+    const diffEl = renderDiff(userInput, closest.toLowerCase());
+    const answerLabelEl = document.createElement('div');
+    answerLabelEl.style.cssText = 'font-size:12px;color:#7FA8C9;margin-top:8px;margin-bottom:4px';
+    answerLabelEl.textContent = '正确答案（任意一个均可）：';
+    const chipsEl = document.createElement('div');
+    chipsEl.className = 'spell-chips';
+    chipsEl.innerHTML = wordData.synonyms.map(s => `<span class="spell-chip">${escapeHtml(s)}</span>`).join('');
+    feedbackEl.innerHTML = '';
+    feedbackEl.appendChild(userLabelEl);
+    feedbackEl.appendChild(diffEl);
+    feedbackEl.appendChild(answerLabelEl);
+    feedbackEl.appendChild(chipsEl);
+    addWordAtInterval(wordData.word, 1);
+    const stats = getPracticeStats('practice_spell') || { total: 0, both_correct: 0 };
+    stats.total++;
+    setPracticeStats('practice_spell', stats);
+    spellSession.total++;
+    spellSession.results[spellSession.current] = 'step2_wrong';
+    updateSpellSessionStat();
+    document.getElementById('spell-next-wrap').style.display = 'block';
+    document.getElementById('spell-next-btn').addEventListener('click', () => renderSpellQuestion(spellSession.current + 1));
+  }
+}
+
+function renderSpellComplete() {
+  document.getElementById('practice-header').innerHTML = '<h2 class="app-title">拼写练习完成</h2>';
+  const content = document.getElementById('practice-content');
+  const results = spellSession.results;
+  const bothCorrect = results.filter(r => r === 'both_correct').length;
+  const step2Wrong = results.filter(r => r === 'step2_wrong').length;
+  const step1Wrong = results.filter(r => r === 'step1_wrong').length;
+  const total = results.length;
+  const accuracy = total > 0 ? Math.round((bothCorrect / total) * 100) : 0;
+  content.innerHTML = `
+    <div class="spell-complete">
+      <div class="spell-complete-icon">✓</div>
+      <div class="spell-complete-title">拼写练习完成</div>
+      <div class="spell-complete-stats">
+        <div class="spell-stat-row" style="color:#22C55E">
+          <span>两步全对</span><span>${bothCorrect} 题</span>
+        </div>
+        <div class="spell-stat-row" style="color:#F59E0B">
+          <span>单词拼对/同义词有误</span><span>${step2Wrong} 题</span>
+        </div>
+        <div class="spell-stat-row" style="color:#EF4444">
+          <span>单词拼错</span><span>${step1Wrong} 题</span>
+        </div>
+      </div>
+      <div class="spell-accuracy">正确率 ${accuracy}%</div>
+      <button class="btn btn--primary" id="spell-back-btn">返回练习</button>
+    </div>`;
+  document.getElementById('spell-back-btn').addEventListener('click', renderPracticeLanding);
 }
 
 /* ===== Flash (速记) ===== */
