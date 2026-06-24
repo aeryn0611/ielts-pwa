@@ -1,0 +1,25 @@
+{
+  "name": "IELTS Synonyms",
+  "short_name": "雅思同义",
+  "description": "IELTS vocabulary spaced repetition tool",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0D1B2A",
+  "background_color": "#0D1B2A",
+  "start_url": "./",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
