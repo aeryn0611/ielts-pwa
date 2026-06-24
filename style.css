@@ -1531,3 +1531,310 @@ body {
   border: 1px solid #243B55;
   color: #7FA8C9;
 }
+
+/* ===== Study Flow (学习流程) ===== */
+
+/* Landing card */
+.prac-flow-card {
+  border: 2px solid var(--accent);
+  background: rgba(74, 158, 255, 0.05);
+  border-radius: 10px;
+  padding: 16px;
+}
+.prac-flow-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #3D5A78;
+  margin-bottom: 6px;
+}
+.prac-flow-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #E8F4FF;
+}
+.prac-flow-desc {
+  font-size: 12px;
+  color: #7FA8C9;
+  margin-top: 4px;
+}
+.prac-flow-btn {
+  width: 100%;
+  height: 44px;
+  margin-top: 12px;
+  background: var(--accent);
+  color: #0D1B2A;
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.1s;
+}
+.prac-flow-btn:active { opacity: 0.8; }
+
+/* Divider */
+.prac-divider {
+  text-align: center;
+  font-size: 12px;
+  color: #3D5A78;
+  margin: 4px 0;
+  padding: 0 8px;
+}
+
+/* Fixed bottom button container */
+.flow-fixed-btn {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+/* Screen 1 */
+.flow-screen {
+  flex: 1;
+  padding: 24px 16px 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.flow-count-label {
+  font-size: 13px;
+  color: #7FA8C9;
+  margin-bottom: 12px;
+}
+.flow-count-hint {
+  font-size: 12px;
+  color: #7FA8C9;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+#flow-count-ctrl .segment-btn.active {
+  color: #0D1B2A;
+}
+
+/* Flow CTA button (accent bg, dark text) */
+.flow-cta-btn {
+  background: var(--accent);
+  color: #0D1B2A;
+  font-weight: 700;
+}
+
+/* Screen 2: Word Exposure */
+.flow-exp-wrap {
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.flow-exp-progress { flex-shrink: 0; }
+.flow-exp-bar {
+  height: 3px;
+  background: #243B55;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.flow-exp-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+.flow-exp-label {
+  font-size: 11px;
+  color: #7FA8C9;
+  text-align: right;
+}
+.flow-exp-card {
+  flex: 1;
+  min-height: 0;
+  background: #152232;
+  border: 1px solid #243B55;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+.flow-exp-word {
+  font-size: 30px;
+  font-weight: 700;
+  color: #E8F4FF;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
+.flow-exp-zh {
+  font-size: 16px;
+  color: #7FA8C9;
+  text-align: center;
+}
+.flow-exp-divider {
+  height: 1px;
+  background: #243B55;
+  width: 100%;
+  margin: 8px 0;
+}
+.flow-exp-syn-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #3D5A78;
+  align-self: flex-start;
+  margin-bottom: 2px;
+}
+.flow-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  width: 100%;
+}
+.flow-chip {
+  background: #1A2B3C;
+  border: 1px solid #243B55;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--accent);
+}
+.flow-replay-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1A2B3C;
+  border: 1px solid #243B55;
+  color: #7FA8C9;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.flow-replay-btn:active { opacity: 0.7; }
+.flow-next-btn {
+  background: #1E3047;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+/* Screen 3: Choose Mode */
+.flow-choose-wrap {
+  padding: 24px 16px;
+}
+.flow-choose-subtitle {
+  font-size: 14px;
+  color: #7FA8C9;
+  margin-bottom: 24px;
+}
+.flow-choose-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.flow-mode-btn {
+  width: 100%;
+  height: 60px;
+  background: #152232;
+  border: 1px solid #243B55;
+  border-radius: var(--radius-sm);
+  color: #E8F4FF;
+  font-size: 15px;
+  font-family: inherit;
+  text-align: left;
+  padding-left: 20px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.1s;
+}
+.flow-mode-btn:active { opacity: 0.8; }
+.flow-choose-hint {
+  font-size: 11px;
+  color: #3D5A78;
+  margin-top: 16px;
+}
+
+/* Screen 4: Complete */
+.flow-complete-wrap {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+}
+.flow-complete-icon {
+  font-size: 48px;
+  color: var(--accent);
+  font-weight: 700;
+  line-height: 1;
+}
+.flow-complete-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #E8F4FF;
+  margin-top: 16px;
+}
+.flow-complete-stat {
+  font-size: 14px;
+  color: #7FA8C9;
+  margin-top: 8px;
+}
+.flow-complete-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 32px;
+}
+.flow-complete-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.1s;
+  background: #152232;
+  border: 1px solid #243B55;
+  color: #7FA8C9;
+}
+.flow-complete-btn:active { opacity: 0.8; }
+.flow-complete-btn--accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Done button for reverse flow mode */
+.quiz-done-btn {
+  background: none;
+  border: 1px solid var(--success);
+  border-radius: 20px;
+  color: var(--success);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 14px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+  min-height: 44px;
+}
+.quiz-done-btn:active { opacity: 0.7; }

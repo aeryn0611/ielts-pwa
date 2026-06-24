@@ -17,11 +17,15 @@ let reviewSession = {
   retry: []
 };
 
-let mcSession = { wordPool: null, fromFlow: false, total: 0, correct: 0, currentQ: null };
+let mcSession = { wordPool: null, fromFlow: false, total: 0, correct: 0, currentQ: null, wordQueue: null, wordQueueIdx: 0 };
 
-let spellSession = { words: [], current: 0, results: [], total: 0, bothCorrect: 0 };
+let spellSession = { words: [], current: 0, results: [], total: 0, bothCorrect: 0, fromFlow: false };
 
-let reverseSession = { recentWords: [], total: 0, recognised: 0 };
+let reverseSession = { recentWords: [], total: 0, recognised: 0, wordPool: null };
+
+let studyFlowWordPool = null;
+let studyFlowWordCount = 20;
+let studyFlowPendingTTS = false;
 
 let flashSession = {
   words: [],
@@ -662,13 +666,25 @@ function initPracticeScreen() {
 }
 
 function renderPracticeLanding() {
-  document.getElementById('practice-header').innerHTML = '<h2 class="app-title">练习</h2>';
+  stopTTS();
   const content = document.getElementById('practice-content');
+  content.style.overflowY = '';
+  content.style.display = '';
+  content.style.flexDirection = '';
+  studyFlowWordPool = null;
+  document.getElementById('practice-header').innerHTML = '<h2 class="app-title">练习</h2>';
   const mc = getPracticeStats('practice_mc') || { total: 0, correct: 0 };
   const spell = getPracticeStats('practice_spell') || { total: 0, both_correct: 0 };
   const rev = getPracticeStats('practice_reverse') || { total: 0, recognised: 0 };
   content.innerHTML = `
     <div class="practice-landing">
+      <div class="prac-flow-card" id="prac-flow-card">
+        <div class="prac-flow-tag">完整学习流程</div>
+        <div class="prac-flow-title">从头学这批词</div>
+        <div class="prac-flow-desc">先过词 · 再专项练习</div>
+        <button class="prac-flow-btn" id="prac-flow-start-btn">开始 →</button>
+      </div>
+      <div class="prac-divider">— 或直接进入练习（随机全库）—</div>
       <div class="prac-mode-card" id="prac-mc-card">
         <div class="prac-mode-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -720,14 +736,17 @@ function renderPracticeLanding() {
         </svg>
       </div>
     </div>`;
-  document.getElementById('prac-mc-card').addEventListener('click', () => startMCMode(null, false));
+  document.getElementById('prac-flow-start-btn').addEventListener('click', renderFlowSelectCount);
+  document.getElementById('prac-mc-card').addEventListener('click', () => startMCMode(null));
   document.getElementById('prac-spell-card').addEventListener('click', startSpellMode);
   document.getElementById('prac-rev-card').addEventListener('click', startReverseMode);
 }
 
-function startMCMode(wordPool, fromFlow) {
-  mcSession.wordPool = wordPool || null;
-  mcSession.fromFlow = fromFlow || false;
+function startMCMode(wordPool = null) {
+  mcSession.wordPool = wordPool;
+  mcSession.fromFlow = wordPool !== null;
+  mcSession.wordQueue = wordPool ? shuffleArray(wordPool.filter(w => w.synonyms.length >= 1)) : null;
+  mcSession.wordQueueIdx = 0;
   mcSession.total = 0;
   mcSession.correct = 0;
   mcSession.currentQ = null;
@@ -742,10 +761,15 @@ function startMCMode(wordPool, fromFlow) {
 }
 
 function generateMCQuestion() {
-  const pool = (mcSession.wordPool && mcSession.wordPool.length)
-    ? mcSession.wordPool.filter(w => w.synonyms.length >= 1)
-    : SYNONYMS_DATA.filter(w => w.synonyms.length >= 1);
-  const wordData = pool[Math.floor(Math.random() * pool.length)];
+  let wordData;
+  if (mcSession.wordQueue) {
+    wordData = mcSession.wordQueue[mcSession.wordQueueIdx++];
+  } else {
+    const pool = (mcSession.wordPool && mcSession.wordPool.length)
+      ? mcSession.wordPool.filter(w => w.synonyms.length >= 1)
+      : SYNONYMS_DATA.filter(w => w.synonyms.length >= 1);
+    wordData = pool[Math.floor(Math.random() * pool.length)];
+  }
   const numCorrect = (wordData.synonyms.length < 2 || Math.random() < 0.7) ? 1 : 2;
   const corrects = shuffleArray([...wordData.synonyms]).slice(0, numCorrect);
   const correctSet = new Set(corrects);
@@ -767,6 +791,10 @@ function generateMCQuestion() {
 
 function renderMCQuestion() {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  if (mcSession.wordQueue && mcSession.wordQueueIdx >= mcSession.wordQueue.length) {
+    renderStudyFlowComplete('选择题');
+    return;
+  }
   const q = generateMCQuestion();
   mcSession.currentQ = { ...q, selected: new Set(), confirmed: false };
   const hint = q.numCorrect > 1 ? '选出所有正确的同义词' : '选出正确的同义词';
@@ -863,10 +891,12 @@ function updateMCStats() {
 
 /* ===== Spell Mode (拼写) ===== */
 
-function startSpellMode() {
+function startSpellMode(wordPool = null) {
+  spellSession.fromFlow = wordPool !== null;
   spellSession.words = shuffleArray(
-    SYNONYMS_DATA.filter(w => w.synonyms.length >= 1)
-  ).slice(0, 20);
+    (wordPool || SYNONYMS_DATA).filter(w => w.synonyms.length >= 1)
+  );
+  if (!wordPool) spellSession.words = spellSession.words.slice(0, 20);
   spellSession.current = 0;
   spellSession.results = [];
   spellSession.total = 0;
@@ -1061,6 +1091,7 @@ function evaluateSpellStep2(wordData) {
 }
 
 function renderSpellComplete() {
+  if (spellSession.fromFlow) { renderStudyFlowComplete('拼写'); return; }
   document.getElementById('practice-header').innerHTML = '<h2 class="app-title">拼写练习完成</h2>';
   const content = document.getElementById('practice-content');
   const results = spellSession.results;
@@ -1092,25 +1123,39 @@ function renderSpellComplete() {
 
 /* ===== Reverse Mode (反向认知) ===== */
 
-function startReverseMode() {
+function startReverseMode(wordPool = null) {
+  reverseSession.wordPool = wordPool;
   reverseSession.recentWords = [];
   reverseSession.total = 0;
   reverseSession.recognised = 0;
+  const rightBtnHtml = wordPool
+    ? `<button class="quiz-done-btn" id="rev-done-btn">完成 ✓</button>`
+    : `<button class="quiz-skip-btn" id="rev-skip-btn">跳过 →</button>`;
   document.getElementById('practice-header').innerHTML = `
     <div class="quiz-header-row">
       <h2 class="quiz-title">反向认知</h2>
-      <button class="quiz-skip-btn" id="rev-skip-btn">跳过 →</button>
+      ${rightBtnHtml}
     </div>
     <div class="quiz-stats-bar" id="rev-stats-bar">本次: 0词 / 0认出</div>`;
-  document.getElementById('rev-skip-btn').addEventListener('click', () => { stopTTS(); renderReverseCard(); });
+  if (wordPool) {
+    document.getElementById('rev-done-btn').addEventListener('click', () => {
+      stopTTS();
+      renderStudyFlowComplete('反向认知');
+    });
+  } else {
+    document.getElementById('rev-skip-btn').addEventListener('click', () => { stopTTS(); renderReverseCard(); });
+  }
   renderReverseCard();
 }
 
 function generateReverseQuestion() {
-  const pool = SYNONYMS_DATA.filter(w => w.synonyms.length >= 2);
+  const basePool = (reverseSession.wordPool && reverseSession.wordPool.length > 0)
+    ? reverseSession.wordPool.filter(w => w.synonyms.length >= 2)
+    : SYNONYMS_DATA.filter(w => w.synonyms.length >= 2);
+  const effectivePool = basePool.length > 0 ? basePool : SYNONYMS_DATA.filter(w => w.synonyms.length >= 2);
   const recentSet = new Set(reverseSession.recentWords.map(w => w.word));
-  let candidates = pool.filter(w => !recentSet.has(w.word));
-  if (candidates.length === 0) candidates = pool;
+  let candidates = effectivePool.filter(w => !recentSet.has(w.word));
+  if (candidates.length === 0) candidates = effectivePool;
   const wordData = candidates[Math.floor(Math.random() * candidates.length)];
   const synonym = wordData.synonyms[Math.floor(Math.random() * wordData.synonyms.length)];
   return { wordData, synonym };
@@ -1191,6 +1236,180 @@ function exitAndNextReverseCard() {
 function updateReverseSessionStat() {
   const el = document.getElementById('rev-stats-bar');
   if (el) el.textContent = `本次: ${reverseSession.total}词 / ${reverseSession.recognised}认出`;
+}
+
+/* ===== Study Flow (学习流程) ===== */
+
+function renderFlowSelectCount() {
+  stopTTS();
+  const content = document.getElementById('practice-content');
+  content.style.overflowY = 'hidden';
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
+  document.getElementById('practice-header').innerHTML = `
+    <div class="quiz-header-row">
+      <h2 class="quiz-title">选词数</h2>
+      <button class="quiz-skip-btn" id="flow-back-btn">返回</button>
+    </div>`;
+  document.getElementById('flow-back-btn').addEventListener('click', renderPracticeLanding);
+  const counts = [10, 20, 30, 50];
+  content.innerHTML = `
+    <div class="flow-screen">
+      <div class="flow-count-label">本次学习词数</div>
+      <div class="segmented-control" id="flow-count-ctrl">
+        ${counts.map(c => `<button class="segment-btn${c === studyFlowWordCount ? ' active' : ''}" data-count="${c}">${c}</button>`).join('')}
+      </div>
+      <div class="flow-count-hint">优先选未掌握的词，其次补充未见过的词</div>
+    </div>
+    <div class="flow-fixed-btn">
+      <button class="btn flow-cta-btn" id="flow-start-btn">开始过词 →</button>
+    </div>`;
+  document.querySelectorAll('#flow-count-ctrl .segment-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#flow-count-ctrl .segment-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      studyFlowWordCount = parseInt(btn.dataset.count);
+    });
+  });
+  document.getElementById('flow-start-btn').addEventListener('click', () => {
+    studyFlowWordPool = buildStudyFlowPool(studyFlowWordCount);
+    studyFlowPendingTTS = true;
+    renderFlowExposure(0);
+  });
+}
+
+function buildStudyFlowPool(n) {
+  const srData = getSRData();
+  const p1 = [], p2 = [], p3 = [];
+  SYNONYMS_DATA.forEach(w => {
+    if (srData[w.word] && srData[w.word].intervalIndex === 0) {
+      p1.push(w);
+    } else if (!srData[w.word]) {
+      p2.push(w);
+    } else {
+      p3.push(w);
+    }
+  });
+  return [...shuffleArray(p1), ...shuffleArray(p2), ...shuffleArray(p3)].slice(0, n);
+}
+
+function renderFlowExposure(index) {
+  const words = studyFlowWordPool;
+  const n = words.length;
+  const wordData = words[index];
+  const pct = Math.round(((index + 1) / n) * 100);
+  const isLast = index === n - 1;
+  const content = document.getElementById('practice-content');
+  content.style.overflowY = 'hidden';
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
+  const chipsHtml = wordData.synonyms.length > 0
+    ? wordData.synonyms.map(s => `<span class="flow-chip">${escapeHtml(s)}</span>`).join('')
+    : `<span style="color:#3D5A78;font-size:13px">暂无同义词</span>`;
+  document.getElementById('practice-header').innerHTML = `
+    <div class="quiz-header-row">
+      <h2 class="quiz-title">过词</h2>
+      <button class="quiz-skip-btn" id="flow-exp-back">返回</button>
+    </div>`;
+  document.getElementById('flow-exp-back').addEventListener('click', () => {
+    if (confirm('退出后进度不保存，确认退出？')) {
+      studyFlowWordPool = null;
+      stopTTS();
+      renderPracticeLanding();
+    }
+  });
+  content.innerHTML = `
+    <div class="flow-exp-wrap">
+      <div class="flow-exp-progress">
+        <div class="flow-exp-bar"><div class="flow-exp-fill" style="width:${pct}%"></div></div>
+        <div class="flow-exp-label">${index + 1} / ${n}</div>
+      </div>
+      <div class="flow-exp-card" id="flow-exp-card">
+        <div class="flow-exp-word">${escapeHtml(wordData.word)}</div>
+        <div class="flow-exp-zh">${escapeHtml(wordData.zh)}</div>
+        <div class="flow-exp-divider"></div>
+        <div class="flow-exp-syn-label">同义替换词</div>
+        <div class="flow-chips">${chipsHtml}</div>
+        <button class="flow-replay-btn" id="flow-replay-btn">🔊</button>
+      </div>
+    </div>
+    <div class="flow-fixed-btn">
+      ${isLast
+        ? `<button class="btn flow-cta-btn" id="flow-nav-btn">开始练习 →</button>`
+        : `<button class="btn flow-next-btn" id="flow-nav-btn">下一个 →</button>`}
+    </div>`;
+  document.getElementById('flow-replay-btn').addEventListener('click', () => speakSingle(wordData.word));
+  if (studyFlowPendingTTS) {
+    speakSingle(wordData.word);
+    studyFlowPendingTTS = false;
+  }
+  if (isLast) {
+    document.getElementById('flow-nav-btn').addEventListener('click', () => {
+      stopTTS();
+      renderFlowChooseMode();
+    });
+  } else {
+    document.getElementById('flow-nav-btn').addEventListener('click', () => {
+      speakSingle(words[index + 1].word);
+      renderFlowExposure(index + 1);
+    });
+  }
+}
+
+function renderFlowChooseMode() {
+  stopTTS();
+  const content = document.getElementById('practice-content');
+  content.style.overflowY = '';
+  content.style.display = '';
+  content.style.flexDirection = '';
+  document.getElementById('practice-header').innerHTML = `
+    <div class="quiz-header-row">
+      <h2 class="quiz-title">选择练习方式</h2>
+    </div>`;
+  const n = studyFlowWordPool.length;
+  content.innerHTML = `
+    <div class="flow-choose-wrap">
+      <div class="flow-choose-subtitle">已过 ${n} 个词，选一种方式练习这批词</div>
+      <div class="flow-choose-btns">
+        <button class="flow-mode-btn" id="flow-mc-btn">✦ 选择题</button>
+        <button class="flow-mode-btn" id="flow-spell-btn">✎ 拼写</button>
+        <button class="flow-mode-btn" id="flow-rev-btn">⇄ 反向认知</button>
+      </div>
+      <div class="flow-choose-hint">练习完成后可返回选择其他方式，词池不变</div>
+    </div>`;
+  document.getElementById('flow-mc-btn').addEventListener('click', () => startMCMode(studyFlowWordPool));
+  document.getElementById('flow-spell-btn').addEventListener('click', () => startSpellMode(studyFlowWordPool));
+  document.getElementById('flow-rev-btn').addEventListener('click', () => startReverseMode(studyFlowWordPool));
+}
+
+function renderStudyFlowComplete(modeName) {
+  stopTTS();
+  const content = document.getElementById('practice-content');
+  content.style.overflowY = '';
+  content.style.display = '';
+  content.style.flexDirection = '';
+  document.getElementById('practice-header').innerHTML = '<h2 class="app-title">学习完成</h2>';
+  const n = studyFlowWordPool ? studyFlowWordPool.length : studyFlowWordCount;
+  content.innerHTML = `
+    <div class="flow-complete-wrap">
+      <div class="flow-complete-icon">✓</div>
+      <div class="flow-complete-title">本轮学习完成</div>
+      <div class="flow-complete-stat">过词 ${n} 个 · ${escapeHtml(modeName)} 练习完成</div>
+      <div class="flow-complete-btns">
+        <button class="flow-complete-btn flow-complete-btn--accent" id="flow-again-btn">再练这批词</button>
+        <button class="flow-complete-btn" id="flow-newbatch-btn">换一批词</button>
+        <button class="flow-complete-btn" id="flow-return-btn">返回练习</button>
+      </div>
+    </div>`;
+  document.getElementById('flow-again-btn').addEventListener('click', renderFlowChooseMode);
+  document.getElementById('flow-newbatch-btn').addEventListener('click', () => {
+    studyFlowWordPool = null;
+    renderFlowSelectCount();
+  });
+  document.getElementById('flow-return-btn').addEventListener('click', () => {
+    studyFlowWordPool = null;
+    renderPracticeLanding();
+  });
 }
 
 /* ===== Flash (速记) ===== */
