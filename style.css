@@ -937,8 +937,8 @@ body {
   min-width: 0;
 }
 
-/* ===== Test Screen (测试) ===== */
-#test-content {
+/* ===== Practice Screen (练习) ===== */
+#practice-content {
   display: flex;
   flex-direction: column;
 }
@@ -1051,6 +1051,10 @@ body {
   background: rgba(239, 68, 68, 0.1);
   color: var(--danger);
 }
+.quiz-option.revealed {
+  border-color: var(--success);
+  background: rgba(34, 197, 94, 0.08);
+}
 
 .quiz-option-icon {
   font-size: 14px;
@@ -1096,4 +1100,78 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ===== Practice Landing ===== */
+.practice-landing {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prac-mode-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  min-height: 72px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s;
+}
+.prac-mode-card:active { background: rgba(255,255,255,0.04); }
+
+.prac-mode-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--accent-dim);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.prac-mode-icon svg { width: 20px; height: 20px; }
+
+.prac-mode-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.prac-mode-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.prac-mode-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.prac-mode-stat {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.prac-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.prac-coming-soon {
+  font-size: 12px;
+  color: #3D5A78;
+  text-align: center;
+  padding: 8px 0 4px;
 }

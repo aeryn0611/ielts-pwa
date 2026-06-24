@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ielts-sr-20260624';
+const CACHE_NAME = 'ielts-sr-20260624c';
 const ASSETS = [
   './',
   './index.html',

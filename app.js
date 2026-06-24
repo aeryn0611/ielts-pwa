@@ -17,9 +17,7 @@ let reviewSession = {
   retry: []
 };
 
-let quizSession = { total: 0, correct: 0 };
-let currentQuestion = null;
-let quizSkipWired = false;
+let mcSession = { wordPool: null, fromFlow: false, total: 0, correct: 0, currentQ: null };
 
 let flashSession = {
   words: [],
@@ -259,7 +257,7 @@ function showScreen(screen) {
   if (screen === 'review') initReviewScreen();
   else if (screen === 'stats') renderStats();
   else if (screen === 'flash') initFlashScreen();
-  else if (screen === 'test') initTestScreen();
+  else if (screen === 'practice') initPracticeScreen();
 }
 
 function showDetail(wordData) {
@@ -606,22 +604,71 @@ function renderStats() {
   `;
 }
 
-/* ===== Test (测试) ===== */
-function initTestScreen() {
-  if (!quizSkipWired) {
-    document.getElementById('quiz-skip-btn').addEventListener('click', renderQuestion);
-    quizSkipWired = true;
-  }
-  renderQuestion();
+/* ===== Practice (练习) ===== */
+
+function getPracticeStats(key) {
+  try { return JSON.parse(sessionStorage.getItem(key)) || null; } catch { return null; }
 }
 
-function generateQuestion() {
-  const eligible = SYNONYMS_DATA.filter(w => w.synonyms.length >= 1);
-  const wordData = eligible[Math.floor(Math.random() * eligible.length)];
-  const maxCorrect = Math.min(2, wordData.synonyms.length);
-  const numCorrect = Math.min(Math.random() < 0.7 ? 1 : 2, maxCorrect);
-  const correctSynonyms = shuffleArray([...wordData.synonyms]).slice(0, numCorrect);
-  const correctSet = new Set(correctSynonyms);
+function setPracticeStats(key, stats) {
+  sessionStorage.setItem(key, JSON.stringify(stats));
+}
+
+function initPracticeScreen() {
+  renderPracticeLanding();
+}
+
+function renderPracticeLanding() {
+  document.getElementById('practice-header').innerHTML = '<h2 class="app-title">练习</h2>';
+  const content = document.getElementById('practice-content');
+  const mc = getPracticeStats('practice_mc') || { total: 0, correct: 0 };
+  content.innerHTML = `
+    <div class="practice-landing">
+      <div class="prac-mode-card" id="prac-mc-card">
+        <div class="prac-mode-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <div class="prac-mode-body">
+          <div class="prac-mode-title">选择题</div>
+          <div class="prac-mode-desc">看词选出正确同义词</div>
+          <div class="prac-mode-stat">今日: ${mc.total}题 / ${mc.correct}正确</div>
+        </div>
+        <svg class="prac-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+      <div class="prac-coming-soon">更多练习模式即将推出...</div>
+    </div>`;
+  document.getElementById('prac-mc-card').addEventListener('click', () => startMCMode(null, false));
+}
+
+function startMCMode(wordPool, fromFlow) {
+  mcSession.wordPool = wordPool || null;
+  mcSession.fromFlow = fromFlow || false;
+  mcSession.total = 0;
+  mcSession.correct = 0;
+  mcSession.currentQ = null;
+  document.getElementById('practice-header').innerHTML = `
+    <div class="quiz-header-row">
+      <h2 class="quiz-title">选择题</h2>
+      <button class="quiz-skip-btn" id="prac-skip-btn">新题 →</button>
+    </div>
+    <div class="quiz-stats-bar" id="prac-stats-bar">本次: 0题 / 0正确</div>`;
+  document.getElementById('prac-skip-btn').addEventListener('click', renderMCQuestion);
+  renderMCQuestion();
+}
+
+function generateMCQuestion() {
+  const pool = (mcSession.wordPool && mcSession.wordPool.length)
+    ? mcSession.wordPool.filter(w => w.synonyms.length >= 1)
+    : SYNONYMS_DATA.filter(w => w.synonyms.length >= 1);
+  const wordData = pool[Math.floor(Math.random() * pool.length)];
+  const numCorrect = (wordData.synonyms.length < 2 || Math.random() < 0.7) ? 1 : 2;
+  const corrects = shuffleArray([...wordData.synonyms]).slice(0, numCorrect);
+  const correctSet = new Set(corrects);
   const numDistractors = 4 - numCorrect;
   const distractors = [];
   const usedTerms = new Set([...wordData.synonyms, wordData.word]);
@@ -632,98 +679,106 @@ function generateQuestion() {
     }
   }
   const allOptions = shuffleArray([
-    ...correctSynonyms.map(s => ({ text: s, correct: true })),
+    ...corrects.map(s => ({ text: s, correct: true })),
     ...distractors.map(s => ({ text: s, correct: false })),
   ]);
   return { wordData, correctSet, allOptions, numCorrect };
 }
 
-function renderQuestion() {
+function renderMCQuestion() {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-  currentQuestion = generateQuestion();
-  currentQuestion.selected = new Set();
-  currentQuestion.confirmed = false;
-  const hint = currentQuestion.numCorrect > 1 ? '选出所有正确的同义词' : '选出正确的同义词';
-  document.getElementById('test-content').innerHTML = `
+  const q = generateMCQuestion();
+  mcSession.currentQ = { ...q, selected: new Set(), confirmed: false };
+  const hint = q.numCorrect > 1 ? '选出所有正确的同义词' : '选出正确的同义词';
+  document.getElementById('practice-content').innerHTML = `
     <div class="quiz-card">
-      <div class="quiz-word">${escapeHtml(currentQuestion.wordData.word)}</div>
-      <div class="quiz-zh">${escapeHtml(currentQuestion.wordData.zh)}</div>
+      <div class="quiz-word">${escapeHtml(q.wordData.word)}</div>
+      <div class="quiz-zh">${escapeHtml(q.wordData.zh)}</div>
       <div class="quiz-hint">${hint}</div>
       <div class="quiz-options">
-        ${currentQuestion.allOptions.map((o, i) => `
-          <button class="quiz-option" data-idx="${i}" data-correct="${o.correct}">
+        ${q.allOptions.map((o, i) => `
+          <button class="quiz-option" data-idx="${i}">
             <span>${escapeHtml(o.text)}</span>
             <span class="quiz-option-icon"></span>
           </button>`).join('')}
       </div>
     </div>
     <div class="quiz-footer">
-      <div class="quiz-result" id="quiz-result" style="display:none"></div>
-      <button class="btn btn--primary btn--large" id="quiz-confirm-btn" style="display:none">确认</button>
-      <div id="quiz-next-wrap" style="display:none">
-        <button class="btn btn--secondary btn--large" id="quiz-next-btn">下一题</button>
+      <div class="quiz-result" id="prac-result" style="display:none"></div>
+      <button class="btn btn--primary btn--large" id="prac-confirm-btn" style="display:none">确认</button>
+      <div id="prac-next-wrap" style="display:none">
+        <button class="btn btn--secondary btn--large" id="prac-next-btn">下一题 →</button>
       </div>
     </div>`;
-  updateQuizStats();
+  updateMCStats();
   document.querySelectorAll('.quiz-option').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (currentQuestion.confirmed) return;
-      const optText = currentQuestion.allOptions[parseInt(btn.dataset.idx)].text;
-      if (currentQuestion.selected.has(optText)) {
-        currentQuestion.selected.delete(optText);
+      const cq = mcSession.currentQ;
+      if (cq.confirmed) return;
+      const optText = cq.allOptions[parseInt(btn.dataset.idx)].text;
+      if (cq.selected.has(optText)) {
+        cq.selected.delete(optText);
         btn.classList.remove('selected');
       } else {
-        currentQuestion.selected.add(optText);
+        cq.selected.add(optText);
         btn.classList.add('selected');
       }
-      document.getElementById('quiz-confirm-btn').style.display =
-        currentQuestion.selected.size > 0 ? 'flex' : 'none';
+      document.getElementById('prac-confirm-btn').style.display =
+        cq.selected.size > 0 ? 'flex' : 'none';
     });
   });
-  document.getElementById('quiz-confirm-btn').addEventListener('click', confirmAnswer);
+  document.getElementById('prac-confirm-btn').addEventListener('click', confirmMCAnswer);
 }
 
-function confirmAnswer() {
-  if (!currentQuestion || currentQuestion.confirmed) return;
-  currentQuestion.confirmed = true;
-  const { selected, correctSet, allOptions } = currentQuestion;
+function confirmMCAnswer() {
+  const cq = mcSession.currentQ;
+  if (!cq || cq.confirmed) return;
+  cq.confirmed = true;
+  const { selected, correctSet, allOptions } = cq;
   const isCorrect = selected.size === correctSet.size && [...selected].every(s => correctSet.has(s));
-  quizSession.total++;
-  if (isCorrect) quizSession.correct++;
-  updateQuizStats();
+  mcSession.total++;
+  if (isCorrect) mcSession.correct++;
+  const stats = getPracticeStats('practice_mc') || { total: 0, correct: 0 };
+  stats.total++;
+  if (isCorrect) stats.correct++;
+  setPracticeStats('practice_mc', stats);
+  updateMCStats();
   document.querySelectorAll('.quiz-option').forEach(btn => {
     btn.disabled = true;
     const opt = allOptions[parseInt(btn.dataset.idx)];
     const icon = btn.querySelector('.quiz-option-icon');
-    if (opt.correct) {
+    if (selected.has(opt.text) && opt.correct) {
       btn.classList.remove('selected');
       btn.classList.add('correct');
       icon.textContent = '✓';
-    } else if (selected.has(opt.text)) {
+    } else if (selected.has(opt.text) && !opt.correct) {
       btn.classList.remove('selected');
       btn.classList.add('wrong');
       icon.textContent = '✗';
+    } else if (!selected.has(opt.text) && opt.correct) {
+      btn.classList.add('revealed');
     }
   });
-  document.getElementById('quiz-confirm-btn').style.display = 'none';
-  const resultEl = document.getElementById('quiz-result');
+  document.getElementById('prac-confirm-btn').style.display = 'none';
+  const resultEl = document.getElementById('prac-result');
   resultEl.style.display = 'block';
   if (isCorrect) {
     resultEl.textContent = '正确 ✓';
     resultEl.className = 'quiz-result success';
-    setTimeout(renderQuestion, 1200);
+    addWordAtInterval(cq.wordData.word, 1);
+    setTimeout(renderMCQuestion, 1200);
   } else {
     resultEl.textContent = '正确答案已显示，已加入复习队列';
     resultEl.className = 'quiz-result failure';
-    addWordAtInterval(currentQuestion.wordData.word, 0);
-    document.getElementById('quiz-next-wrap').style.display = 'block';
-    document.getElementById('quiz-next-btn').addEventListener('click', renderQuestion);
+    addWordAtInterval(cq.wordData.word, 0);
+    document.getElementById('prac-next-wrap').style.display = 'block';
+    document.getElementById('prac-next-btn').addEventListener('click', renderMCQuestion);
   }
 }
 
-function updateQuizStats() {
-  const el = document.getElementById('quiz-stats');
-  if (el) el.textContent = `本次: ${quizSession.total}题 / ${quizSession.correct}正确`;
+function updateMCStats() {
+  const el = document.getElementById('prac-stats-bar');
+  if (el) el.textContent = `本次: ${mcSession.total}题 / ${mcSession.correct}正确`;
 }
 
 /* ===== Flash (速记) ===== */

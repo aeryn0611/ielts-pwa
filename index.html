@@ -68,16 +68,12 @@
     <main id="flash-content" class="screen-body"></main>
   </div>
 
-  <!-- Screen: Test (测试) -->
-  <div id="screen-test" class="screen">
-    <header class="screen-header">
-      <div class="quiz-header-row">
-        <h2 class="quiz-title">随机测试</h2>
-        <button class="quiz-skip-btn" id="quiz-skip-btn">下一题</button>
-      </div>
-      <div class="quiz-stats-bar" id="quiz-stats">本次: 0题 / 0正确</div>
+  <!-- Screen: Practice (练习) -->
+  <div id="screen-practice" class="screen">
+    <header class="screen-header" id="practice-header">
+      <h2 class="app-title">练习</h2>
     </header>
-    <main id="test-content" class="screen-body"></main>
+    <main id="practice-content" class="screen-body"></main>
   </div>
 
   <!-- Screen 4: Stats -->
@@ -106,11 +102,20 @@
       </svg>
       <span>复习</span>
     </button>
-    <button class="nav-btn" data-screen="test">
+    <button class="nav-btn" data-screen="flash">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        <rect x="2" y="7" width="16" height="13" rx="2"/>
+        <path d="M6 7V5a2 2 0 012-2h12a2 2 0 012 2v13a2 2 0 01-2 2"/>
       </svg>
-      <span>测试</span>
+      <span>速记</span>
+    </button>
+    <button class="nav-btn" data-screen="practice">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="12" r="6"/>
+        <circle cx="12" cy="12" r="2"/>
+      </svg>
+      <span>练习</span>
     </button>
     <button class="nav-btn" data-screen="stats">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
