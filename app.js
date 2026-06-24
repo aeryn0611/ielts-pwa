@@ -17,6 +17,15 @@ let reviewSession = {
   retry: []
 };
 
+let flashSession = {
+  words: [],
+  count: 20,
+  round1Results: {},
+  round2Words: [],
+  round2Results: {},
+  addedToQueue: [],
+};
+
 /* ===== Date Helpers ===== */
 function getTodayStr() {
   const d = new Date();
@@ -223,6 +232,15 @@ function buildAlphaGroups() {
   alphabetGroups = groups;
 }
 
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 /* ===== Navigation ===== */
 function showScreen(screen) {
   stopTTS();
@@ -236,6 +254,7 @@ function showScreen(screen) {
 
   if (screen === 'review') initReviewScreen();
   else if (screen === 'stats') renderStats();
+  else if (screen === 'flash') initFlashScreen();
 }
 
 function showDetail(wordData) {
@@ -580,6 +599,260 @@ function renderStats() {
     </div>
     ${total === 0 ? '<div class="search-empty">还没有加入任何词汇<br><small style="opacity:0.6;font-size:12px;display:block;margin-top:4px">去查词页搜索并加入复习队列</small></div>' : ''}
   `;
+}
+
+/* ===== Flash (速记) ===== */
+function speakSingle(word) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(word);
+  utt.lang = 'en-US';
+  utt.rate = 0.85;
+  const voice = getVoice();
+  if (voice) utt.voice = voice;
+  window.speechSynthesis.speak(utt);
+}
+
+function addWordAtInterval(word, intervalIndex) {
+  const data = getSRData();
+  const today = getTodayStr();
+  if (data[word]) {
+    data[word].intervalIndex = intervalIndex;
+    data[word].nextReview = addDaysToStr(today, INTERVALS[intervalIndex]);
+  } else {
+    data[word] = { word, intervalIndex, nextReview: addDaysToStr(today, INTERVALS[intervalIndex]), addedDate: today, reviewCount: 0 };
+  }
+  saveSRData(data);
+  if (!flashSession.addedToQueue.includes(word)) flashSession.addedToQueue.push(word);
+}
+
+function pickFlashWords(count) {
+  const srData = getSRData();
+  const inQueue = new Set(Object.keys(srData));
+  const brandNew = shuffleArray(SYNONYMS_DATA.filter(w => !inQueue.has(w.word)));
+  const struggling = shuffleArray(SYNONYMS_DATA.filter(w => inQueue.has(w.word) && srData[w.word].intervalIndex === 0));
+  const result = [];
+  const used = new Set();
+  for (const w of [...brandNew, ...struggling]) {
+    if (result.length >= count) break;
+    result.push(w); used.add(w.word);
+  }
+  if (result.length < count) {
+    for (const w of shuffleArray(SYNONYMS_DATA.filter(w => !used.has(w.word)))) {
+      if (result.length >= count) break;
+      result.push(w);
+    }
+  }
+  return result;
+}
+
+function getDistractor(wordData) {
+  const excluded = new Set([...wordData.synonyms, wordData.word]);
+  for (const w of shuffleArray(SYNONYMS_DATA.filter(w => w.word !== wordData.word && w.synonyms.length > 0))) {
+    const valid = w.synonyms.filter(s => !excluded.has(s));
+    if (valid.length > 0) return valid[Math.floor(Math.random() * valid.length)];
+  }
+  const fallback = SYNONYMS_DATA.find(w => w.word !== wordData.word && w.synonyms.length > 0);
+  return fallback ? fallback.synonyms[0] : '—';
+}
+
+function initFlashScreen() {
+  renderFlashLanding();
+}
+
+function renderFlashLanding() {
+  document.getElementById('flash-header').innerHTML = '<h2 class="app-title">速记</h2>';
+  const content = document.getElementById('flash-content');
+  content.style.overflowY = 'auto';
+  const counts = [10, 20, 30, 50];
+  content.innerHTML = `
+    <div class="flash-landing">
+      <div>
+        <div class="flash-section-label">本次学习词数</div>
+        <div class="segmented-control" id="flash-count-ctrl">
+          ${counts.map(c => `<button class="segment-btn${c === flashSession.count ? ' active' : ''}" data-count="${c}">${c}</button>`).join('')}
+        </div>
+      </div>
+      <button class="btn btn--primary btn--large" id="flash-start-btn">开始速记</button>
+      <div class="flash-tip">第一轮：认识所有词 · 第二轮：巩固没把握的词</div>
+    </div>`;
+  document.querySelectorAll('#flash-count-ctrl .segment-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#flash-count-ctrl .segment-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      flashSession.count = parseInt(btn.dataset.count);
+    });
+  });
+  document.getElementById('flash-start-btn').addEventListener('click', () => {
+    flashSession.words = pickFlashWords(flashSession.count);
+    flashSession.round1Results = {};
+    flashSession.round2Words = [];
+    flashSession.round2Results = {};
+    flashSession.addedToQueue = [];
+    content.style.overflowY = 'hidden';
+    renderRound1Card(0);
+  });
+}
+
+function renderRound1Card(index) {
+  const words = flashSession.words;
+  const total = words.length;
+  if (index >= total) { finishRound1(); return; }
+  const wordData = words[index];
+  const pct = Math.round((index / total) * 100);
+  const chipsHtml = wordData.synonyms.length > 0
+    ? wordData.synonyms.map(s => `<span class="flash-chip">${escapeHtml(s)}</span>`).join('')
+    : '<span class="no-synonyms">暂无同义词</span>';
+  document.getElementById('flash-content').innerHTML = `
+    <div class="flash-round-view">
+      <div class="flash-progress-wrap">
+        <div class="flash-progress-bar"><div class="flash-progress-fill" style="width:${pct}%"></div></div>
+        <div class="flash-round-label">第一轮 &nbsp;${index + 1} / ${total}</div>
+      </div>
+      <div class="flash-card-wrap">
+        <div class="flash-card card-enter" id="flash-card-el">
+          <div class="flash-card-word">${escapeHtml(wordData.word)}</div>
+          <div class="flash-card-zh">${escapeHtml(wordData.zh)}</div>
+          <div class="flash-card-divider"></div>
+          <div class="flash-synonyms-label">同义替换词</div>
+          <div class="flash-chips">${chipsHtml}</div>
+          <button class="flash-replay-btn" id="flash-replay-btn">🔊</button>
+        </div>
+      </div>
+      <div class="flash-actions">
+        <button class="btn btn--success btn--large" id="flash-known-btn">认识 ✓</button>
+        <button class="btn btn--muted btn--large" id="flash-unsure-btn">没把握 →</button>
+      </div>
+    </div>`;
+  speakSingle(wordData.word);
+  document.getElementById('flash-replay-btn').addEventListener('click', () => speakSingle(wordData.word));
+  document.getElementById('flash-known-btn').addEventListener('click', () => {
+    flashSession.round1Results[wordData.word] = 'known';
+    if (index + 1 < words.length) speakSingle(words[index + 1].word);
+    advanceCard(() => renderRound1Card(index + 1));
+  });
+  document.getElementById('flash-unsure-btn').addEventListener('click', () => {
+    flashSession.round1Results[wordData.word] = 'unsure';
+    if (index + 1 < words.length) speakSingle(words[index + 1].word);
+    advanceCard(() => renderRound1Card(index + 1));
+  });
+}
+
+function advanceCard(next) {
+  const card = document.getElementById('flash-card-el');
+  if (!card) { next(); return; }
+  card.classList.remove('card-enter');
+  card.classList.add('card-exit');
+  setTimeout(next, 200);
+}
+
+function finishRound1() {
+  const knownWords = flashSession.words.filter(w => flashSession.round1Results[w.word] === 'known');
+  const unsureWords = flashSession.words.filter(w => flashSession.round1Results[w.word] !== 'known');
+  knownWords.forEach(w => addWordAtInterval(w.word, 1));
+  flashSession.round2Words = unsureWords;
+  renderRound1Summary(knownWords.length, unsureWords.length);
+}
+
+function renderRound1Summary(knownCount, unsureCount) {
+  const content = document.getElementById('flash-content');
+  content.style.overflowY = 'auto';
+  if (unsureCount === 0) {
+    content.innerHTML = `
+      <div class="flash-summary">
+        <div style="font-size:40px">🎉</div>
+        <div class="flash-summary-title">第一轮完成 ✓</div>
+        <div class="flash-summary-nums">认识 ${knownCount} 词 · 没把握 0 词</div>
+        <div class="flash-summary-msg">全部认识！已将 ${knownCount} 词加入复习队列</div>
+        <div style="width:100%"><button class="btn btn--primary btn--large" id="flash-done-btn">完成</button></div>
+      </div>`;
+    document.getElementById('flash-done-btn').addEventListener('click', renderFlashComplete);
+  } else {
+    content.innerHTML = `
+      <div class="flash-summary">
+        <div style="font-size:40px">📖</div>
+        <div class="flash-summary-title">第一轮完成 ✓</div>
+        <div class="flash-summary-nums">认识 ${knownCount} 词 · 没把握 ${unsureCount} 词</div>
+        <div class="flash-summary-msg">认识的词已加入复习队列，继续第二轮巩固</div>
+        <div style="width:100%"><button class="btn btn--primary btn--large" id="flash-r2-btn">开始第二轮，巩固 ${unsureCount} 个词</button></div>
+      </div>`;
+    document.getElementById('flash-r2-btn').addEventListener('click', () => {
+      document.getElementById('flash-content').style.overflowY = 'hidden';
+      renderRound2Card(0);
+    });
+  }
+}
+
+function renderRound2Card(index) {
+  const words = flashSession.round2Words;
+  const total = words.length;
+  if (index >= total) { renderFlashComplete(); return; }
+  const wordData = words[index];
+  const pct = Math.round((index / total) * 100);
+  const correctSyn = wordData.synonyms.length > 0
+    ? wordData.synonyms[Math.floor(Math.random() * wordData.synonyms.length)]
+    : wordData.word;
+  const distractor = getDistractor(wordData);
+  const options = shuffleArray([{ text: correctSyn, correct: true }, { text: distractor, correct: false }]);
+  document.getElementById('flash-content').innerHTML = `
+    <div class="flash-round-view">
+      <div class="flash-progress-wrap">
+        <div class="flash-progress-bar"><div class="flash-progress-fill" style="width:${pct}%"></div></div>
+        <div class="flash-round-label">第二轮 &nbsp;${index + 1} / ${total}</div>
+      </div>
+      <div class="flash-card-wrap">
+        <div class="flash-card card-enter" id="flash-card-el">
+          <div class="flash-card-word" style="font-size:24px">${escapeHtml(wordData.word)}</div>
+          <div class="flash-card-zh" style="font-size:14px">${escapeHtml(wordData.zh)}</div>
+          <div class="flash-card-divider"></div>
+          <div class="flash-synonyms-label" style="margin-bottom:12px">选出一个正确的同义词</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            ${options.map((o, i) => `<button class="flash-option-btn" data-idx="${i}" data-correct="${o.correct}">${escapeHtml(o.text)}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="flash-actions" id="flash-r2-actions"></div>
+    </div>`;
+  document.querySelectorAll('.flash-option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.flash-option-btn').forEach(b => b.disabled = true);
+      if (btn.dataset.correct === 'true') {
+        btn.classList.add('correct');
+        addWordAtInterval(wordData.word, 1);
+        flashSession.round2Results[wordData.word] = 'correct';
+        setTimeout(() => renderRound2Card(index + 1), 800);
+      } else {
+        btn.classList.add('wrong');
+        document.querySelectorAll('.flash-option-btn').forEach(b => {
+          if (b.dataset.correct === 'true') b.classList.add('correct');
+        });
+        addWordAtInterval(wordData.word, 0);
+        flashSession.round2Results[wordData.word] = 'wrong';
+        document.getElementById('flash-r2-actions').innerHTML =
+          '<button class="btn btn--secondary btn--large" id="flash-next-btn">下一题</button>';
+        document.getElementById('flash-next-btn').addEventListener('click', () => renderRound2Card(index + 1));
+      }
+    });
+  });
+}
+
+function renderFlashComplete() {
+  const content = document.getElementById('flash-content');
+  content.style.overflowY = 'auto';
+  const totalWords = flashSession.words.length;
+  const addedCount = flashSession.addedToQueue.length;
+  content.innerHTML = `
+    <div class="flash-complete">
+      <div class="flash-complete-icon">✓</div>
+      <div class="flash-complete-title">速记完成！</div>
+      <div class="flash-complete-stats">本次学习 ${totalWords} 词<br>已加入复习队列 ${addedCount} 词</div>
+      <div style="width:100%;display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn--secondary btn--large" id="flash-again-btn">再来一轮</button>
+        <button class="btn btn--primary btn--large" id="flash-go-review-btn">去复习</button>
+      </div>
+    </div>`;
+  document.getElementById('flash-again-btn').addEventListener('click', renderFlashLanding);
+  document.getElementById('flash-go-review-btn').addEventListener('click', () => showScreen('review'));
 }
 
 /* ===== Init ===== */

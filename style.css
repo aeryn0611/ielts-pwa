@@ -111,7 +111,7 @@ body {
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   min-height: 44px;
   transition: color 0.15s;
@@ -121,8 +121,8 @@ body {
 .nav-btn:active { opacity: 0.7; }
 
 .nav-icon {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 /* ===== Search Screen ===== */
@@ -388,6 +388,11 @@ body {
   height: 56px;
   font-size: 17px;
 }
+.btn--muted {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
 
 /* ===== Review Screen ===== */
 .review-header-inner {
@@ -621,6 +626,276 @@ body {
 #review-content .btn {
   margin: 0 20px;
   width: calc(100% - 40px);
+}
+
+/* ===== Flash Screen (速记) ===== */
+#flash-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.flash-round-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.flash-landing {
+  padding: 20px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.flash-section-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.segmented-control {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+}
+
+.segment-btn {
+  flex: 1;
+  height: 36px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.segment-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.flash-tip {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+  opacity: 0.7;
+  line-height: 1.6;
+}
+
+.flash-progress-wrap {
+  flex-shrink: 0;
+  padding: 12px 16px 8px;
+}
+
+.flash-progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.flash-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.flash-round-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.flash-card-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 16px;
+}
+
+.flash-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px 48px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.flash-card-word {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.flash-card-zh {
+  font-size: 16px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 6px;
+}
+
+.flash-card-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+
+.flash-synonyms-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #3D5A78;
+  margin-bottom: 10px;
+}
+
+.flash-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.flash-chip {
+  background: #1A2B3C;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.flash-replay-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px;
+  opacity: 0.6;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.flash-replay-btn:active { opacity: 1; }
+
+@keyframes cardSlideIn {
+  from { transform: translateX(60px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes cardSlideOut {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(-60px); opacity: 0; }
+}
+.card-enter { animation: cardSlideIn 0.2s ease forwards; }
+.card-exit  { animation: cardSlideOut 0.2s ease forwards; }
+
+.flash-actions {
+  flex-shrink: 0;
+  padding: 8px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flash-summary {
+  padding: 32px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.flash-summary-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.flash-summary-nums {
+  font-size: 17px;
+  color: var(--text-secondary);
+}
+
+.flash-summary-msg {
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  width: 100%;
+  line-height: 1.5;
+}
+
+.flash-option-btn {
+  width: 100%;
+  height: 56px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.flash-option-btn:not(:disabled):active { background: rgba(255,255,255,0.05); }
+.flash-option-btn.correct {
+  border-color: var(--success);
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--success);
+}
+.flash-option-btn.wrong {
+  border-color: var(--danger);
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--danger);
+}
+
+.flash-complete {
+  padding: 48px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.flash-complete-icon {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--success);
+  line-height: 1;
+}
+
+.flash-complete-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.flash-complete-stats {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
 }
 
 /* ===== Alpha Word List (Search Screen) ===== */

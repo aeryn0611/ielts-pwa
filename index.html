@@ -60,6 +60,27 @@
     <main id="review-content" class="screen-body"></main>
   </div>
 
+  <!-- Screen: Flash (速记) -->
+  <div id="screen-flash" class="screen">
+    <header class="screen-header" id="flash-header">
+      <h2 class="app-title">速记</h2>
+    </header>
+    <main id="flash-content" class="screen-body"></main>
+  </div>
+
+  <!-- Screen: Test (测试) — placeholder -->
+  <div id="screen-test" class="screen">
+    <header class="screen-header">
+      <h2 class="app-title">测试</h2>
+    </header>
+    <main class="screen-body">
+      <div class="search-empty" style="padding-top:60px">
+        <div style="font-size:40px;margin-bottom:12px">🚧</div>
+        <div>功能开发中，敬请期待</div>
+      </div>
+    </main>
+  </div>
+
   <!-- Screen 4: Stats -->
   <div id="screen-stats" class="screen">
     <header class="screen-header">
@@ -85,6 +106,20 @@
         <line x1="3" y1="10" x2="21" y2="10"/>
       </svg>
       <span>复习</span>
+    </button>
+    <button class="nav-btn" data-screen="flash">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="16" height="13" rx="2"/>
+        <path d="M6 7V5a2 2 0 012-2h12a2 2 0 012 2v13a2 2 0 01-2 2"/>
+      </svg>
+      <span>速记</span>
+    </button>
+    <button class="nav-btn" data-screen="test">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+      <span>测试</span>
     </button>
     <button class="nav-btn" data-screen="stats">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
