@@ -17,6 +17,10 @@ let reviewSession = {
   retry: []
 };
 
+let quizSession = { total: 0, correct: 0 };
+let currentQuestion = null;
+let quizSkipWired = false;
+
 let flashSession = {
   words: [],
   count: 20,
@@ -255,6 +259,7 @@ function showScreen(screen) {
   if (screen === 'review') initReviewScreen();
   else if (screen === 'stats') renderStats();
   else if (screen === 'flash') initFlashScreen();
+  else if (screen === 'test') initTestScreen();
 }
 
 function showDetail(wordData) {
@@ -599,6 +604,126 @@ function renderStats() {
     </div>
     ${total === 0 ? '<div class="search-empty">还没有加入任何词汇<br><small style="opacity:0.6;font-size:12px;display:block;margin-top:4px">去查词页搜索并加入复习队列</small></div>' : ''}
   `;
+}
+
+/* ===== Test (测试) ===== */
+function initTestScreen() {
+  if (!quizSkipWired) {
+    document.getElementById('quiz-skip-btn').addEventListener('click', renderQuestion);
+    quizSkipWired = true;
+  }
+  renderQuestion();
+}
+
+function generateQuestion() {
+  const eligible = SYNONYMS_DATA.filter(w => w.synonyms.length >= 1);
+  const wordData = eligible[Math.floor(Math.random() * eligible.length)];
+  const maxCorrect = Math.min(2, wordData.synonyms.length);
+  const numCorrect = Math.min(Math.random() < 0.7 ? 1 : 2, maxCorrect);
+  const correctSynonyms = shuffleArray([...wordData.synonyms]).slice(0, numCorrect);
+  const correctSet = new Set(correctSynonyms);
+  const numDistractors = 4 - numCorrect;
+  const distractors = [];
+  const usedTerms = new Set([...wordData.synonyms, wordData.word]);
+  for (const w of shuffleArray(SYNONYMS_DATA.filter(w => w.word !== wordData.word))) {
+    if (distractors.length >= numDistractors) break;
+    for (const s of shuffleArray([...w.synonyms])) {
+      if (!usedTerms.has(s)) { distractors.push(s); usedTerms.add(s); break; }
+    }
+  }
+  const allOptions = shuffleArray([
+    ...correctSynonyms.map(s => ({ text: s, correct: true })),
+    ...distractors.map(s => ({ text: s, correct: false })),
+  ]);
+  return { wordData, correctSet, allOptions, numCorrect };
+}
+
+function renderQuestion() {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  currentQuestion = generateQuestion();
+  currentQuestion.selected = new Set();
+  currentQuestion.confirmed = false;
+  const hint = currentQuestion.numCorrect > 1 ? '选出所有正确的同义词' : '选出正确的同义词';
+  document.getElementById('test-content').innerHTML = `
+    <div class="quiz-card">
+      <div class="quiz-word">${escapeHtml(currentQuestion.wordData.word)}</div>
+      <div class="quiz-zh">${escapeHtml(currentQuestion.wordData.zh)}</div>
+      <div class="quiz-hint">${hint}</div>
+      <div class="quiz-options">
+        ${currentQuestion.allOptions.map((o, i) => `
+          <button class="quiz-option" data-idx="${i}" data-correct="${o.correct}">
+            <span>${escapeHtml(o.text)}</span>
+            <span class="quiz-option-icon"></span>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div class="quiz-footer">
+      <div class="quiz-result" id="quiz-result" style="display:none"></div>
+      <button class="btn btn--primary btn--large" id="quiz-confirm-btn" style="display:none">确认</button>
+      <div id="quiz-next-wrap" style="display:none">
+        <button class="btn btn--secondary btn--large" id="quiz-next-btn">下一题</button>
+      </div>
+    </div>`;
+  updateQuizStats();
+  document.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (currentQuestion.confirmed) return;
+      const optText = currentQuestion.allOptions[parseInt(btn.dataset.idx)].text;
+      if (currentQuestion.selected.has(optText)) {
+        currentQuestion.selected.delete(optText);
+        btn.classList.remove('selected');
+      } else {
+        currentQuestion.selected.add(optText);
+        btn.classList.add('selected');
+      }
+      document.getElementById('quiz-confirm-btn').style.display =
+        currentQuestion.selected.size > 0 ? 'flex' : 'none';
+    });
+  });
+  document.getElementById('quiz-confirm-btn').addEventListener('click', confirmAnswer);
+}
+
+function confirmAnswer() {
+  if (!currentQuestion || currentQuestion.confirmed) return;
+  currentQuestion.confirmed = true;
+  const { selected, correctSet, allOptions } = currentQuestion;
+  const isCorrect = selected.size === correctSet.size && [...selected].every(s => correctSet.has(s));
+  quizSession.total++;
+  if (isCorrect) quizSession.correct++;
+  updateQuizStats();
+  document.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.disabled = true;
+    const opt = allOptions[parseInt(btn.dataset.idx)];
+    const icon = btn.querySelector('.quiz-option-icon');
+    if (opt.correct) {
+      btn.classList.remove('selected');
+      btn.classList.add('correct');
+      icon.textContent = '✓';
+    } else if (selected.has(opt.text)) {
+      btn.classList.remove('selected');
+      btn.classList.add('wrong');
+      icon.textContent = '✗';
+    }
+  });
+  document.getElementById('quiz-confirm-btn').style.display = 'none';
+  const resultEl = document.getElementById('quiz-result');
+  resultEl.style.display = 'block';
+  if (isCorrect) {
+    resultEl.textContent = '正确 ✓';
+    resultEl.className = 'quiz-result success';
+    setTimeout(renderQuestion, 1200);
+  } else {
+    resultEl.textContent = '正确答案已显示，已加入复习队列';
+    resultEl.className = 'quiz-result failure';
+    addWordAtInterval(currentQuestion.wordData.word, 0);
+    document.getElementById('quiz-next-wrap').style.display = 'block';
+    document.getElementById('quiz-next-btn').addEventListener('click', renderQuestion);
+  }
+}
+
+function updateQuizStats() {
+  const el = document.getElementById('quiz-stats');
+  if (el) el.textContent = `本次: ${quizSession.total}题 / ${quizSession.correct}正确`;
 }
 
 /* ===== Flash (速记) ===== */

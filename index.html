@@ -68,17 +68,16 @@
     <main id="flash-content" class="screen-body"></main>
   </div>
 
-  <!-- Screen: Test (测试) — placeholder -->
+  <!-- Screen: Test (测试) -->
   <div id="screen-test" class="screen">
     <header class="screen-header">
-      <h2 class="app-title">测试</h2>
-    </header>
-    <main class="screen-body">
-      <div class="search-empty" style="padding-top:60px">
-        <div style="font-size:40px;margin-bottom:12px">🚧</div>
-        <div>功能开发中，敬请期待</div>
+      <div class="quiz-header-row">
+        <h2 class="quiz-title">随机测试</h2>
+        <button class="quiz-skip-btn" id="quiz-skip-btn">下一题</button>
       </div>
-    </main>
+      <div class="quiz-stats-bar" id="quiz-stats">本次: 0题 / 0正确</div>
+    </header>
+    <main id="test-content" class="screen-body"></main>
   </div>
 
   <!-- Screen 4: Stats -->
@@ -107,17 +106,9 @@
       </svg>
       <span>复习</span>
     </button>
-    <button class="nav-btn" data-screen="flash">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="7" width="16" height="13" rx="2"/>
-        <path d="M6 7V5a2 2 0 012-2h12a2 2 0 012 2v13a2 2 0 01-2 2"/>
-      </svg>
-      <span>速记</span>
-    </button>
     <button class="nav-btn" data-screen="test">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 20h9"/>
-        <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
       </svg>
       <span>测试</span>
     </button>
