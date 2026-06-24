@@ -21,6 +21,8 @@ let mcSession = { wordPool: null, fromFlow: false, total: 0, correct: 0, current
 
 let spellSession = { words: [], current: 0, results: [], total: 0, bothCorrect: 0 };
 
+let reverseSession = { recentWords: [], total: 0, recognised: 0 };
+
 let flashSession = {
   words: [],
   count: 20,
@@ -664,6 +666,7 @@ function renderPracticeLanding() {
   const content = document.getElementById('practice-content');
   const mc = getPracticeStats('practice_mc') || { total: 0, correct: 0 };
   const spell = getPracticeStats('practice_spell') || { total: 0, both_correct: 0 };
+  const rev = getPracticeStats('practice_reverse') || { total: 0, recognised: 0 };
   content.innerHTML = `
     <div class="practice-landing">
       <div class="prac-mode-card" id="prac-mc-card">
@@ -698,10 +701,28 @@ function renderPracticeLanding() {
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </div>
-      <div class="prac-coming-soon">更多练习模式即将推出...</div>
+      <div class="prac-mode-card" id="prac-rev-card">
+        <div class="prac-mode-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="5 4 3 6 5 8"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <polyline points="19 16 21 18 19 20"/>
+            <line x1="21" y1="18" x2="3" y2="18"/>
+          </svg>
+        </div>
+        <div class="prac-mode-body">
+          <div class="prac-mode-title">反向认知</div>
+          <div class="prac-mode-desc">看同义词认出所属词组</div>
+          <div class="prac-mode-stat">今日: ${rev.total}词 / ${rev.recognised}认出</div>
+        </div>
+        <svg class="prac-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
     </div>`;
   document.getElementById('prac-mc-card').addEventListener('click', () => startMCMode(null, false));
   document.getElementById('prac-spell-card').addEventListener('click', startSpellMode);
+  document.getElementById('prac-rev-card').addEventListener('click', startReverseMode);
 }
 
 function startMCMode(wordPool, fromFlow) {
@@ -1067,6 +1088,109 @@ function renderSpellComplete() {
       <button class="btn btn--primary" id="spell-back-btn">返回练习</button>
     </div>`;
   document.getElementById('spell-back-btn').addEventListener('click', renderPracticeLanding);
+}
+
+/* ===== Reverse Mode (反向认知) ===== */
+
+function startReverseMode() {
+  reverseSession.recentWords = [];
+  reverseSession.total = 0;
+  reverseSession.recognised = 0;
+  document.getElementById('practice-header').innerHTML = `
+    <div class="quiz-header-row">
+      <h2 class="quiz-title">反向认知</h2>
+      <button class="quiz-skip-btn" id="rev-skip-btn">跳过 →</button>
+    </div>
+    <div class="quiz-stats-bar" id="rev-stats-bar">本次: 0词 / 0认出</div>`;
+  document.getElementById('rev-skip-btn').addEventListener('click', () => { stopTTS(); renderReverseCard(); });
+  renderReverseCard();
+}
+
+function generateReverseQuestion() {
+  const pool = SYNONYMS_DATA.filter(w => w.synonyms.length >= 2);
+  const recentSet = new Set(reverseSession.recentWords.map(w => w.word));
+  let candidates = pool.filter(w => !recentSet.has(w.word));
+  if (candidates.length === 0) candidates = pool;
+  const wordData = candidates[Math.floor(Math.random() * candidates.length)];
+  const synonym = wordData.synonyms[Math.floor(Math.random() * wordData.synonyms.length)];
+  return { wordData, synonym };
+}
+
+function renderReverseCard() {
+  const { wordData, synonym } = generateReverseQuestion();
+  reverseSession.recentWords.push(wordData);
+  if (reverseSession.recentWords.length > 5) reverseSession.recentWords.shift();
+  document.getElementById('practice-content').innerHTML = `
+    <div class="rev-card-wrap">
+      <div class="rev-card card-enter" id="rev-card">
+        <div class="rev-q-label">这个词属于哪个词组？</div>
+        <div class="rev-syn-word">${escapeHtml(synonym)}</div>
+        <button class="rev-tts-btn" id="rev-tts-btn">🔊 听发音</button>
+        <div class="rev-answer-area" id="rev-answer-area" style="display:none"></div>
+        <div class="rev-action-area" id="rev-action-area">
+          <button class="btn btn--muted" id="rev-show-btn">显示答案</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('rev-tts-btn').addEventListener('click', () => speakSingle(synonym));
+  document.getElementById('rev-show-btn').addEventListener('click', () => revealReverseAnswer(wordData, synonym));
+}
+
+function revealReverseAnswer(wordData, synonym) {
+  speakSingle(wordData.word);
+  const answerArea = document.getElementById('rev-answer-area');
+  const actionArea = document.getElementById('rev-action-area');
+  const chipsHtml = wordData.synonyms.map(s =>
+    s === synonym
+      ? `<span class="rev-chip rev-chip--hl">${escapeHtml(s)}<span class="rev-chip-tag"> ← 这个</span></span>`
+      : `<span class="rev-chip">${escapeHtml(s)}</span>`
+  ).join('');
+  answerArea.innerHTML = `
+    <div class="rev-divider"></div>
+    <div class="rev-section-label">所属词组：</div>
+    <div class="rev-headword">${escapeHtml(wordData.word)}</div>
+    <div class="rev-headword-zh">${escapeHtml(wordData.zh)}</div>
+    <div class="rev-divider"></div>
+    <div class="rev-section-label">该组全部同义词：</div>
+    <div class="rev-chips">${chipsHtml}</div>`;
+  answerArea.style.display = 'block';
+  actionArea.innerHTML = `
+    <div class="rev-result-btns">
+      <button class="rev-recognised-btn" id="rev-recognised-btn">认出了 ✓</button>
+      <button class="rev-missed-btn" id="rev-missed-btn">没认出 ↩</button>
+    </div>`;
+  document.getElementById('rev-recognised-btn').addEventListener('click', () => {
+    addWordAtInterval(wordData.word, 1);
+    const stats = getPracticeStats('practice_reverse') || { total: 0, recognised: 0 };
+    stats.total++; stats.recognised++;
+    setPracticeStats('practice_reverse', stats);
+    reverseSession.total++; reverseSession.recognised++;
+    updateReverseSessionStat();
+    exitAndNextReverseCard();
+  });
+  document.getElementById('rev-missed-btn').addEventListener('click', () => {
+    addWordAtInterval(wordData.word, 0);
+    const stats = getPracticeStats('practice_reverse') || { total: 0, recognised: 0 };
+    stats.total++;
+    setPracticeStats('practice_reverse', stats);
+    reverseSession.total++;
+    updateReverseSessionStat();
+    exitAndNextReverseCard();
+  });
+}
+
+function exitAndNextReverseCard() {
+  stopTTS();
+  const card = document.getElementById('rev-card');
+  if (!card) { renderReverseCard(); return; }
+  card.classList.remove('card-enter');
+  card.classList.add('card-exit');
+  setTimeout(renderReverseCard, 200);
+}
+
+function updateReverseSessionStat() {
+  const el = document.getElementById('rev-stats-bar');
+  if (el) el.textContent = `本次: ${reverseSession.total}词 / ${reverseSession.recognised}认出`;
 }
 
 /* ===== Flash (速记) ===== */
