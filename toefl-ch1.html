@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>核心高频通用词 · 三篇串联阅读</title>
+<style>
+  :root{
+    --paper:#F4F5F0;
+    --paper-deep:#EAEBE4;
+    --ink:#16202B;
+    --ink-soft:#4A5560;
+    --ink-faint:#8B939B;
+    --wash:#E9E3C8;
+    --wash-strong:#DCD2A6;
+    --pine:#1F5E5B;
+    --rule:#D3D5CB;
+    --ok:#2C6B4F;
+    --no:#9A3B32;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:Charter,"Bitstream Charter",Georgia,"Times New Roman","Songti SC","Source Han Serif SC","SimSun",serif;
+    font-size:17px;
+    line-height:1.72;
+  }
+  .chrome{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif}
+
+  header{
+    border-bottom:1px solid var(--rule);
+    padding:22px 20px 16px;
+    max-width:1180px;margin:0 auto;
+  }
+  h1{
+    font-size:23px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em;
+  }
+  .sub{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:13.5px;color:var(--ink-soft);margin:0}
+
+  nav{
+    max-width:1180px;margin:0 auto;padding:14px 20px 0;
+    display:flex;gap:8px;flex-wrap:wrap;
+  }
+  .tab{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:13.5px;font-weight:500;
+    background:none;border:1px solid var(--rule);border-radius:2px;
+    padding:7px 13px;color:var(--ink-soft);cursor:pointer;
+    text-align:left;line-height:1.35;
+  }
+  .tab:hover{border-color:var(--pine);color:var(--ink)}
+  .tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .tab .n{display:block;font-size:11.5px;opacity:.65;font-weight:400}
+
+  .layout{
+    max-width:1180px;margin:0 auto;padding:8px 20px 90px;
+    display:grid;grid-template-columns:minmax(0,1fr) 268px;gap:44px;align-items:start;
+  }
+  main{min-width:0}
+
+  .meta{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:12.5px;color:var(--ink-faint);
+    margin:26px 0 6px;
+  }
+  h2{font-size:26px;font-weight:600;line-height:1.28;margin:0 0 4px;letter-spacing:-.015em;max-width:22ch}
+  .field{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:13px;color:var(--ink-soft);margin:0 0 26px}
+
+  article p{margin:0 0 1.15em;max-width:66ch}
+  .zh{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    font-size:14.5px;line-height:1.85;color:var(--ink-soft);
+    border-left:2px solid var(--wash-strong);
+    padding-left:14px;margin:-.4em 0 1.5em;max-width:60ch;
+  }
+  .zh[hidden]{display:none}
+
+  .w{
+    background:linear-gradient(transparent 62%, var(--wash) 62%);
+    border:0;padding:0 1px;font:inherit;color:inherit;
+    cursor:pointer;border-radius:1px;
+  }
+  .w:hover{background:linear-gradient(transparent 58%, var(--wash-strong) 58%)}
+  .w.seen{background:linear-gradient(transparent 62%, var(--wash) 62%);box-shadow:inset 0 -1.5px 0 var(--pine)}
+  .w[aria-expanded="true"]{background:var(--wash-strong)}
+  .w:focus-visible,button:focus-visible{outline:2px solid var(--pine);outline-offset:2px}
+
+  .toolbar{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    padding:14px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+    margin:0 0 26px;
+  }
+  .btn{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:13px;font-weight:500;background:none;
+    border:1px solid var(--rule);border-radius:2px;padding:6px 12px;
+    color:var(--ink-soft);cursor:pointer;
+  }
+  .btn:hover{border-color:var(--pine);color:var(--pine)}
+  .btn[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:#fff}
+  .count{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",system-ui,sans-serif;font-size:12.5px;color:var(--ink-faint);margin-left:auto}
+
+  /* marginal note */
+  aside{position:sticky;top:20px}
+  .note{
+    border-top:2px solid var(--ink);padding-top:12px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  }
+  .note .empty{font-size:13px;color:var(--ink-faint);line-height:1.6}
+  .note .hw{font-family:Charter,Georgia,"Songti SC",serif;font-size:21px;font-weight:600;line-height:1.3;margin:0}
+  .note .ipa{font-size:13px;color:var(--ink-soft);margin:3px 0 0}
+  .note .pos{display:inline-block;font-size:11.5px;color:var(--pine);border:1px solid var(--wash-strong);padding:1px 6px;border-radius:2px;margin:9px 0 0}
+  .note .def{font-size:15px;margin:8px 0 0;line-height:1.6}
+  .note .lab{font-size:11.5px;color:var(--ink-faint);margin:16px 0 3px}
+  .note .ex{font-family:Charter,Georgia,"Songti SC",serif;font-size:14px;line-height:1.6;color:var(--ink-soft);margin:0}
+  .note .colls{margin:0;padding:0;list-style:none;font-size:13.5px;line-height:1.75}
+  .note .colls li{color:var(--ink-soft)}
+  .note .colls b{font-weight:500;color:var(--ink)}
+
+  /* word list */
+  details.list{margin:34px 0 0;border-top:1px solid var(--rule);padding-top:14px}
+  details.list summary{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:13.5px;font-weight:500;cursor:pointer;color:var(--ink-soft);
+  }
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+    gap:2px 20px;margin-top:14px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:13px;
+  }
+  .grid span{color:var(--ink-soft);padding:2px 0}
+  .grid span b{font-family:Charter,Georgia,"Songti SC",serif;font-weight:600;color:var(--ink);font-size:14px}
+
+  /* questions */
+  .qs{margin:44px 0 0;border-top:2px solid var(--ink);padding-top:22px}
+  .qs h3{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:15px;font-weight:600;margin:0 0 20px}
+  .q{margin:0 0 30px;max-width:64ch}
+  .q .stem{margin:0 0 12px;font-size:16.5px;line-height:1.65}
+  .q .stem em{background:var(--wash);font-style:normal;padding:0 2px}
+  .opt{
+    display:block;width:100%;text-align:left;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:14.5px;
+    background:none;border:1px solid var(--rule);border-radius:2px;
+    padding:9px 13px;margin:0 0 7px;cursor:pointer;color:var(--ink);line-height:1.55;
+  }
+  .opt:hover:not(:disabled){border-color:var(--pine)}
+  .opt:disabled{cursor:default}
+  .opt.right{border-color:var(--ok);background:#EAF2ED;color:var(--ok);font-weight:500}
+  .opt.wrong{border-color:var(--no);background:#F7EBEA;color:var(--no)}
+  .exp{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:13.5px;line-height:1.75;color:var(--ink-soft);
+    border-left:2px solid var(--wash-strong);padding-left:13px;margin:11px 0 0;
+  }
+  .exp[hidden]{display:none}
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;gap:0;padding-bottom:0}
+    aside{
+      position:fixed;left:0;right:0;bottom:0;z-index:20;
+      background:var(--paper);border-top:1px solid var(--rule);
+      box-shadow:0 -6px 24px rgba(22,32,43,.13);
+      padding:14px 20px 20px;max-height:62vh;overflow-y:auto;
+      transform:translateY(101%);transition:transform .22s ease;
+    }
+    aside.open{transform:translateY(0)}
+    .note{border-top:0;padding-top:0}
+    .closeNote{position:absolute;top:10px;right:14px}
+    body{padding-bottom:0}
+    h2{font-size:22px}
+  }
+  @media (min-width:901px){.closeNote{display:none}}
+  @media (prefers-reduced-motion:reduce){aside{transition:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>核心高频通用词 · 三篇串联阅读</h1>
+  <p class="sub chrome">90 词分三组，每篇 30 词，密度约 7%，接近真实托福学术阅读。点击带底纹的词看释义与搭配。</p>
+</header>
+
+<nav id="tabs" role="tablist"></nav>
+
+<div class="layout">
+  <main id="main"></main>
+  <aside id="aside">
+    <button class="btn closeNote chrome" id="closeNote">关闭</button>
+    <div class="note" id="note">
+      <p class="empty">点击文中任意带底纹的词，释义、例句和高频搭配会出现在这里。</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+const V = {
+"sustainable":["/səˈsteɪnəbəl/","adj.","可持续的"],
+"sustainability":["/səˌsteɪnəˈbɪləti/","n.","可持续性"],
+"adapt":["/əˈdæpt/","v.","适应；改编"],
+"adaptation":["/ˌædæpˈteɪʃən/","n.","适应；适应性特征"],
+"significant":["/sɪɡˈnɪfɪkənt/","adj.","重要的；显著的"],
+"significantly":["/sɪɡˈnɪfɪkəntli/","adv.","显著地"],
+"environmental":["/ɪnˌvaɪrənˈmentəl/","adj.","环境的"],
+"environment":["/ɪnˈvaɪrənmənt/","n.","环境"],
+"regulate":["/ˈreɡjəleɪt/","v.","调节；管制"],
+"regulation":["/ˌreɡjəˈleɪʃən/","n.","规则；监管"],
+"influence":["/ˈɪnfluəns/","n./v.","影响"],
+"innovation":["/ˌɪnəˈveɪʃən/","n.","创新"],
+"innovative":["/ˈɪnəveɪtɪv/","adj.","创新的"],
+"process":["/ˈprɑːses/","n./v.","过程；处理"],
+"potential":["/pəˈtenʃəl/","adj./n.","潜在的；潜力"],
+"efficient":["/ɪˈfɪʃənt/","adj.","高效的"],
+"efficiency":["/ɪˈfɪʃənsi/","n.","效率"],
+"diverse":["/daɪˈvɜːrs/","adj.","多样的"],
+"diversity":["/daɪˈvɜːrsəti/","n.","多样性"],
+"implication":["/ˌɪmplɪˈkeɪʃən/","n.","影响；含义"],
+"challenge":["/ˈtʃælɪndʒ/","n./v.","挑战"],
+"approach":["/əˈproʊtʃ/","n./v.","方法；接近"],
+"respond":["/rɪˈspɑːnd/","v.","回应；反应"],
+"response":["/rɪˈspɑːns/","n.","反应；回应"],
+"benefit":["/ˈbenɪfɪt/","n./v.","利益；获益"],
+"impact":["/ˈɪmpækt/","n./v.","冲击；影响"],
+"risk":["/rɪsk/","n./v.","风险"],
+"resource":["/ˈriːsɔːrs/","n.","资源"],
+"strategy":["/ˈstrætədʒi/","n.","策略；战略"],
+"technology":["/tekˈnɑːlədʒi/","n.","技术"],
+"solution":["/səˈluːʃən/","n.","解决方案"],
+"issue":["/ˈɪʃuː/","n.","议题；问题"],
+"concern":["/kənˈsɜːrn/","n./v.","担忧；关切"],
+"measure":["/ˈmeʒər/","n./v.","措施；测量"],
+"maintain":["/meɪnˈteɪn/","v.","维持；保养"],
+"enhance":["/ɪnˈhæns/","v.","增强；提高"],
+"promote":["/prəˈmoʊt/","v.","促进；推广"],
+"reduce":["/rɪˈduːs/","v.","减少"],
+"increase":["/ɪnˈkriːs/","v./n.","增加"],
+"improve":["/ɪmˈpruːv/","v.","改善；提升"],
+"prevent":["/prɪˈvent/","v.","防止；阻止"],
+"protect":["/prəˈtekt/","v.","保护"],
+"preserve":["/prɪˈzɜːrv/","v.","保存；保护"],
+"require":["/rɪˈkwaɪər/","v.","需要；要求"],
+"involve":["/ɪnˈvɑːlv/","v.","涉及；包含"],
+"provide":["/prəˈvaɪd/","v.","提供"],
+"create":["/kriˈeɪt/","v.","创造；创建"],
+"develop":["/dɪˈveləp/","v.","发展；开发"],
+"emerge":["/ɪˈmɜːrdʒ/","v.","出现；浮现"],
+"shift":["/ʃɪft/","n./v.","转变；变化"],
+"trend":["/trend/","n.","趋势"],
+"pattern":["/ˈpætərn/","n.","模式；规律"],
+"structure":["/ˈstrʌktʃər/","n./v.","结构；构建"],
+"function":["/ˈfʌŋkʃən/","n./v.","功能；运作"],
+"factor":["/ˈfæktər/","n.","因素"],
+"element":["/ˈelɪmənt/","n.","要素；元素"],
+"aspect":["/ˈæspekt/","n.","方面"],
+"feature":["/ˈfiːtʃər/","n./v.","特点；以…为特色"],
+"capacity":["/kəˈpæsəti/","n.","能力；容量"],
+"ability":["/əˈbɪləti/","n.","能力"],
+"performance":["/pərˈfɔːrməns/","n.","表现；性能"],
+"quality":["/ˈkwɑːləti/","n.","质量；性质"],
+"value":["/ˈvæljuː/","n./v.","价值；重视"],
+"cost":["/kɔːst/","n./v.","成本"],
+"demand":["/dɪˈmænd/","n./v.","需求；要求"],
+"supply":["/səˈplaɪ/","n./v.","供应；供给"],
+"source":["/sɔːrs/","n./v.","来源；获取"],
+"method":["/ˈmeθəd/","n.","方法"],
+"technique":["/tekˈniːk/","n.","技术；技巧"],
+"tool":["/tuːl/","n.","工具"],
+"system":["/ˈsɪstəm/","n.","系统"],
+"model":["/ˈmɑːdəl/","n./v.","模型；模仿"],
+"data":["/ˈdeɪtə/","n.","数据"],
+"analysis":["/əˈnæləsɪs/","n.","分析"],
+"research":["/rɪˈsɜːrtʃ/","n./v.","研究"],
+"study":["/ˈstʌdi/","n./v.","研究；学习"],
+"discovery":["/dɪˈskʌvəri/","n.","发现"],
+"evidence":["/ˈevɪdəns/","n.","证据"],
+"theory":["/ˈθɪri/","n.","理论"],
+"hypothesis":["/haɪˈpɑːθəsɪs/","n.","假设"],
+"experiment":["/ɪkˈsperɪmənt/","n./v.","实验"],
+"observation":["/ˌɑːbzərˈveɪʃən/","n.","观察"],
+"demonstrate":["/ˈdemənstreɪt/","v.","展示；证明"],
+"suggest":["/səˈdʒest/","v.","表明；建议"],
+"indicate":["/ˈɪndɪkeɪt/","v.","表明；显示"],
+"reveal":["/rɪˈviːl/","v.","揭示；显示"],
+"consist of":["/kənˈsɪst əv/","phr.","由…组成"],
+"contribute to":["/kənˈtrɪbjuːt tə/","phr.","贡献于；导致"],
+"result in":["/rɪˈzʌlt ɪn/","phr.","导致"],
+"lead to":["/liːd tə/","phr.","导致"]
+};
+
+// 每个词在本套材料中的高频学术搭配
+const C = {
+"sustainable":["a <b>sustainable</b> yield / catch","<b>sustainable</b> development","environmentally <b>sustainable</b>"],
+"sustainability":["the long-term <b>sustainability</b> of …","ecological / financial <b>sustainability</b>"],
+"adapt":["<b>adapt</b> to changing conditions","<b>adapt</b> a method for a new purpose"],
+"adaptation":["an <b>adaptation</b> to cold / drought","the capacity for <b>adaptation</b>"],
+"significant":["a <b>significant</b> increase / decline","statistically <b>significant</b>"],
+"significantly":["vary <b>significantly</b> between groups","<b>significantly</b> higher than"],
+"environmental":["<b>environmental</b> cost / pressure","<b>environmental</b> degradation"],
+"environment":["a shared <b>environment</b>","adapt to the <b>environment</b>"],
+"regulate":["<b>regulate</b> fishing effort","<b>regulate</b> body temperature"],
+"regulation":["strict / lax <b>regulations</b>","<b>regulations</b> governing …"],
+"influence":["<b>influence</b> markets / behaviour","have a strong <b>influence</b> on"],
+"innovation":["technological <b>innovation</b>","recent <b>innovations</b> in …"],
+"innovative":["an <b>innovative</b> design / approach"],
+"process":["the <b>process</b> of photosynthesis","a slow, gradual <b>process</b>"],
+"potential":["a <b>potential</b> replacement for …","have the <b>potential</b> to"],
+"efficient":["<b>efficient</b> at converting energy","more <b>efficient</b> than"],
+"efficiency":["conversion <b>efficiency</b>","improve / raise <b>efficiency</b>"],
+"diverse":["a <b>diverse</b> range of …","genetically <b>diverse</b>"],
+"diversity":["species / biological <b>diversity</b>","<b>diversity</b> of the food web"],
+"implication":["the <b>implications</b> of a finding","have <b>implications</b> for policy"],
+"challenge":["pose a serious <b>challenge</b>","the central <b>challenge</b> is …"],
+"approach":["take a narrow <b>approach</b>","an <b>approach</b> to the problem"],
+"respond":["<b>respond</b> to a stimulus / change"],
+"response":["in <b>response</b> to a novel problem","the immune <b>response</b>"],
+"benefit":["a clear <b>benefit</b>","<b>benefit</b> from …"],
+"impact":["the measured <b>impact</b> of …","have a positive <b>impact</b> on"],
+"risk":["raise / reduce the <b>risk</b> to …","at <b>risk</b> of collapse"],
+"resource":["an inexhaustible <b>resource</b>","a shared / common-pool <b>resource</b>"],
+"strategy":["one <b>strategy</b> places / uses …","adopt a <b>strategy</b>"],
+"technology":["the core <b>technology</b> is …","advances in <b>technology</b>"],
+"solution":["the obvious <b>solution</b>","find a <b>solution</b> to"],
+"issue":["the third <b>issue</b> is …","a pressing <b>issue</b>"],
+"concern":["voice <b>concern</b> about …","growing <b>concern</b> over"],
+"measure":["take <b>measures</b> to …","early <b>measures</b> were crude"],
+"maintain":["<b>maintain</b> itself / a population","<b>maintain</b> a stable level"],
+"enhance":["<b>enhance</b> the lifetime of …","<b>enhance</b> performance"],
+"promote":["<b>promote</b> X as a replacement for Y","<b>promote</b> sustainable living"],
+"reduce":["<b>reduce</b> total catch / emissions"],
+"increase":["<b>increase</b> raw conversion efficiency","a sharp <b>increase</b> in"],
+"improve":["<b>improve</b> durability / the economics"],
+"prevent":["<b>prevent</b> collapse","<b>prevent</b> X from happening"],
+"protect":["<b>protect</b> the stock / habitat"],
+"preserve":["<b>preserve</b> critical spawning grounds","<b>preserve</b> artifacts"],
+"require":["<b>require</b> far more subjects","<b>require</b> no wiring"],
+"involve":["the experiment <b>involved</b> a single individual","<b>involve</b> multiple stakeholders"],
+"provide":["<b>provide</b> a fuel that can be stored","<b>provide</b> evidence for"],
+"create":["<b>create</b> and refine a tool","<b>create</b> an incentive"],
+"develop":["<b>develop</b> a solution on the spot","<b>develop</b> a vaccine"],
+"emerge":["what has <b>emerged</b> is …","<b>emerge</b> from simple rules"],
+"shift":["a northward <b>shift</b> in range","a <b>shift</b> towards …"],
+"trend":["the <b>trend</b> shows no sign of reversing","a clear upward <b>trend</b>"],
+"pattern":["a fixed / inherited <b>pattern</b>","a <b>pattern</b> consistent with …"],
+"structure":["the <b>structure</b> of the layer","structural rather than technical"],
+"function":["the <b>function</b> of the catalytic surface","serve a <b>function</b>"],
+"factor":["three <b>factors</b> limit performance","a key <b>factor</b> in …"],
+"element":["earth-abundant <b>elements</b>","an essential <b>element</b> of"],
+"aspect":["another <b>aspect</b> of current work","the most important <b>aspect</b>"],
+"feature":["whether these <b>features</b> will …","a distinguishing <b>feature</b>"],
+"capacity":["the <b>capacity</b> to run on water and light","<b>capacity</b> for adaptation"],
+"ability":["exploit the organism's <b>ability</b> to …","the <b>ability</b> to adapt"],
+"performance":["three factors limit <b>performance</b>","improve <b>performance</b>"],
+"quality":["the same <b>quality</b> that makes it reactive","air / water <b>quality</b>"],
+"value":["practical <b>value</b>","the full <b>value</b> of its catch"],
+"cost":["cut material <b>costs</b>","bear only a fraction of the <b>cost</b>"],
+"demand":["<b>demand</b> for access is unlimited","consumer <b>demand</b> for …"],
+"supply":["the <b>supply</b> of fish is finite","the water <b>supply</b>"],
+"source":["one <b>source</b> of pressure","a clean <b>source</b> of power"],
+"method":["the <b>method</b> was straightforward","a reliable <b>method</b> for"],
+"technique":["a general <b>technique</b> for altering objects","a unique <b>technique</b>"],
+"tool":["modify a <b>tool</b> in response to …","a powerful <b>tool</b> for"],
+"system":["a common-pool <b>system</b>","a <b>system</b> that splits water"],
+"model":["build computational <b>models</b>","<b>model</b> how X could arise"],
+"data":["neither account survives the <b>data</b>","accurate <b>data</b>"],
+"analysis":["<b>analysis</b> of later footage revealed …","statistical <b>analysis</b>"],
+"research":["the <b>research</b> took a narrow approach","further <b>research</b> is needed"],
+"study":["the <b>study</b> was published in 2002","a recent <b>study</b> found …"],
+"discovery":["the <b>discovery</b> that … was reported","a major <b>discovery</b>"],
+"evidence":["how the <b>evidence</b> accumulates","strong <b>evidence</b> for"],
+"theory":["a more modest <b>theory</b>","the <b>theory</b> explains …"],
+"hypothesis":["frame a specific <b>hypothesis</b>","test a <b>hypothesis</b>"],
+"experiment":["the <b>experiment</b> involved …","conduct an <b>experiment</b>"],
+"observation":["reported from field <b>observation</b>","careful <b>observation</b>"],
+"demonstrate":["<b>demonstrate</b> under controlled conditions","the study <b>demonstrates</b> that …"],
+"suggest":["which <b>suggests</b> that …","the evidence <b>suggests</b>"],
+"indicate":["subsequent trials <b>indicate</b> that …","results <b>indicate</b> a trend"],
+"reveal":["analysis <b>revealed</b> that …","the study <b>reveals</b> how …"],
+"consist of":["a stock does not <b>consist of</b> a single species"],
+"contribute to":["warming has <b>contributed to</b> a shift","factors that <b>contribute to</b> decline"],
+"result in":["it <b>resulted in</b> a race to fish","poor planning <b>results in</b> …"],
+"lead to":["the collapse <b>led to</b> job losses","<b>lead to</b> extreme weather"]
+};
+
+const P = [
+{
+ no:"第 1 篇 / 30 词",
+ title:"Managing a Common-Pool Fishery",
+ field:"环境经济学 · 资源治理",
+ body:[
+"For most of the twentieth century, marine fisheries were treated as an inexhaustible [[resource]]. Fleets expanded, catches rose, and few scientists voiced any [[concern]] about the long-term [[sustainability]] of the industry. That confidence collapsed in the early 1990s, when the northern cod stock off Newfoundland — once among the most productive in the world — failed to recover after decades of intensive harvesting. The collapse [[led to|lead to]] the loss of roughly forty thousand jobs and forced economists and ecologists alike to reconsider what a [[sustainable]] catch actually looks like.",
+"The underlying problem is structural rather than technical. A fishery is what economists call a common-pool system: the [[supply]] of fish is finite and shared, while the [[demand]] for access is effectively unlimited. Each vessel that stays at sea one extra day gains the full value of its catch but bears only a fraction of the [[environmental]] cost, since the depletion is spread across every other participant. The outcome is a persistent incentive to overfish. Individual restraint does not [[prevent]] collapse; it merely transfers the catch to a competitor. This asymmetry is the central [[challenge]] in managing any shared [[environment]].",
+"Attempts to [[regulate]] fishing effort have taken several forms. Early [[measures|measure]] were crude — closed seasons, minimum net-mesh sizes, outright bans — and often produced perverse outcomes. Shortening the season did not [[reduce]] total catch; it simply [[resulted in|result in]] a compressed, more dangerous race to fish, raising the [[risk]] to crews without [[protecting|protect]] the stock. Later [[regulations|regulation]] moved toward allocating shares of the total allowable catch to individual vessels, which removed the incentive to race and allowed operators to [[adapt]] their schedules to weather and market conditions.",
+"Ecologists argue that quota systems, however well designed, address only one [[source]] of pressure. A stock does not [[consist of]] a single species in isolation. It sits inside a food web whose [[diversity]] — predators, prey, competitors, and habitat-forming organisms — determines how quickly a depleted population can rebuild. Warming water has already [[contributed to|contribute to]] a northward [[shift]] in the range of several commercially important species, and that [[trend]] shows no sign of reversing. Whether a stock can [[maintain]] itself under such conditions depends less on fishing pressure alone than on its capacity for [[adaptation]].",
+"The most [[diverse]] management regimes now combine catch limits with protected areas that [[preserve]] critical spawning grounds. Their measured [[impact]] has been modest but consistent: recovery is slower than the models predicted, yet it is real."
+ ],
+ zh:[
+"在二十世纪的大部分时间里，海洋渔业被当作一种取之不尽的资源。船队扩张，捕获量上升，几乎没有科学家对这个行业的长期可持续性表达过担忧。这种信心在 1990 年代初崩塌：纽芬兰外海的北方鳕鱼种群——曾是世界上产量最高的种群之一——在数十年的高强度捕捞后未能恢复。这次崩溃导致约四万人失业，并迫使经济学家和生态学家重新思考：可持续的捕获量究竟是什么样子。",
+"根本问题是结构性的，而非技术性的。渔业属于经济学家所说的公共池塘系统：鱼的供给是有限且共享的，而获取渠道的需求实际上是无限的。每一艘多在海上停留一天的船只都获得其渔获的全部价值，却只承担环境成本的一小部分，因为资源损耗被分摊到了其他所有参与者身上。其结果是持续存在的过度捕捞激励。个体的克制并不能阻止崩溃，只是把渔获转移给了竞争者。这种不对称性正是管理任何共享环境时的核心挑战。",
+"管制捕捞强度的尝试有过几种形式。早期的措施相当粗糙——休渔期、最小网目尺寸、彻底禁捕——而且常常产生适得其反的结果。缩短渔期并没有减少总捕获量，只是导致了一场被压缩得更加危险的抢捕竞赛，在没有保护种群的同时提高了船员的风险。后来的法规转向把总可捕量的份额分配给单艘船只，这消除了抢捕的激励，也让作业者能够根据天气和市场状况调整自己的时间安排。",
+"生态学家认为，配额制度无论设计得多好，都只处理了压力的一个来源。一个种群并不是由孤立的单一物种组成的。它位于一个食物网之中，而这个食物网的多样性——捕食者、猎物、竞争者以及构建栖息地的生物——决定了一个被耗竭的种群能多快恢复。变暖的海水已经促成了若干具有商业价值的物种分布区向北移动，而这一趋势没有任何逆转的迹象。一个种群能否在这样的条件下维持自身，与其说取决于捕捞压力本身，不如说取决于它的适应能力。",
+"目前最多样的管理制度会把捕获限额与保护关键产卵场的保护区结合起来。其可测量的影响一直不大，但相当稳定：恢复速度比模型预测的要慢，但确实在发生。"
+ ],
+ qs:[
+  {stem:"The word <em>perverse</em> in paragraph 3 is closest in meaning to",
+   opts:["contrary to what was intended","carefully calculated","widely accepted by the industry","temporary and reversible"],a:0,
+   exp:"词汇题靠语境，不靠背释义。后一句给出了具体内容：缩短渔期没有减少捕获量，反而制造了更危险的抢捕。这是「与意图相反的结果」。B、C、D 在上下文里都没有支撑。"},
+  {stem:"According to paragraph 2, individual restraint fails to prevent collapse because",
+   opts:["most vessels are unaware of the depletion","the fish taken by one vessel are simply taken by another","environmental costs are impossible to measure","governments refuse to enforce existing rules"],a:1,
+   exp:"原文：it merely transfers the catch to a competitor（只是把渔获转移给竞争者）。选项 B 是它的同义改写。A、C、D 都属于「听起来合理但文中没说」，这是托福事实题最常见的干扰方式。"},
+  {stem:"What can be inferred about quota systems from paragraphs 3 and 4?",
+   opts:["They have eliminated overfishing in most regions.","They changed fishermen's incentives but do not address ecological pressures.","They are less effective than closed seasons.","They were introduced before minimum net-mesh rules."],a:1,
+   exp:"第 3 段说配额制消除了抢捕激励，第 4 段紧接着说它「只处理了压力的一个来源」。两段合起来正是 B。D 与 later / early 的时间顺序矛盾。"},
+  {stem:"Which sentence best expresses the essential information in: <em>Whether a stock can maintain itself under such conditions depends less on fishing pressure alone than on its capacity for adaptation.</em>",
+   opts:["Fishing pressure no longer affects fish populations.","A stock's survival now depends more on its ability to adapt than on fishing pressure by itself.","Adaptation and fishing pressure are equally important to a stock's survival.","Stocks that cannot adapt should not be fished at all."],a:1,
+   exp:"句子简化题要保留原句的比较关系。less A than B = 更取决于 B。A 把 less 读成了 not（绝对化），C 抹掉了比较，D 加入了原句没有的建议。"}
+ ]
+},
+{
+ no:"第 2 篇 / 30 词",
+ title:"Testing Tool Use in Crows",
+ field:"动物认知 · 研究方法",
+ body:[
+"The [[discovery]] that New Caledonian crows manufacture hooked twigs to extract insects from crevices was first reported from field [[observation]] in the 1990s. For a decade the finding rested largely on anecdote. Birds were seen carrying shaped sticks, but no one had [[demonstrated|demonstrate]] under controlled conditions that the behaviour reflected anything more than a fixed [[pattern]] inherited from ancestors.",
+"The [[research]] that changed this took a deliberately narrow [[approach]]. Rather than asking whether crows are intelligent — a question too vague to test — investigators framed a specific [[hypothesis]]: that an individual bird can modify a [[tool]] in [[response]] to a problem it has never encountered. The [[method]] was straightforward. Food was placed at the bottom of a vertical tube, and the birds were offered only straight wire. If the behaviour were rigidly inherited, the crows should fail. If they could [[develop]] a solution on the spot, at least some would bend the wire into a hook.",
+"One bird, Betty, did so on nine of ten trials. The [[study]] was published in 2002 and its [[implications|implication]] were contested almost immediately. Critics noted that the [[experiment]] [[involved|involve]] a single individual whose prior history was poorly documented. [[Analysis|analysis]] of later footage [[revealed|reveal]] that wild crows do sometimes bend materials during ordinary foraging, which [[suggests|suggest]] that Betty's solution was less novel than the original account implied.",
+"This is how [[evidence]] in animal cognition typically accumulates: a striking result, a [[significant]] narrowing of the claims made for it, and then a slower body of work that [[requires|require]] far more subjects. Subsequent trials [[indicate]] that hook manufacture is widespread in the species but varies [[significantly]] between populations — a distribution more consistent with social learning than with a single innate program.",
+"What has [[emerged|emerge]] is a more modest [[theory]]. Crows appear to possess a general [[technique]] for altering objects, which they [[create]] and refine through practice and which local conditions then shape. Neither the clever-bird account nor the mere-instinct account survives the [[data]]. Researchers now build computational [[models|model]] of how such flexibility could arise from relatively simple learning rules, and test whether captive birds [[respond]] to changed reward structures in the way those models predict."
+ ],
+ zh:[
+"新喀里多尼亚乌鸦会制造带钩的树枝、从缝隙中挑出昆虫——这一发现最早是在 1990 年代通过野外观察报告的。此后十年，这一结论主要建立在轶事之上。人们看到鸟叼着被加工过的枝条，但没有人在受控条件下证明，这种行为不只是一种从祖先那里继承来的固定模式。",
+"改变这一局面的研究采取了刻意收窄的路径。研究者没有去问乌鸦是否聪明——这个问题太含糊，无法检验——而是提出了一个具体假设：单只鸟能够针对一个从未遇到过的问题去改造工具。方法很直接。食物被放在一根垂直管的底部，而提供给鸟的只有笔直的铁丝。如果这种行为是严格遗传的，乌鸦应该失败；如果它们能当场想出办法，至少有一些会把铁丝弯成钩。",
+"一只名叫 Betty 的鸟在十次试验中成功了九次。这项研究发表于 2002 年，其影响几乎立刻遭到质疑。批评者指出，该实验只涉及一只个体，而这只个体此前的经历记录很不充分。对后来影像资料的分析揭示，野生乌鸦在日常觅食中有时也会弯折材料，这表明 Betty 的解法并不像最初的叙述所暗示的那样新颖。",
+"动物认知领域的证据通常就是这样累积的：一个引人注目的结果，随后是对其主张范围的显著收窄，再然后是一批进展更慢、需要多得多受试个体的工作。后续试验表明，制钩行为在该物种中相当普遍，但在不同种群之间差异显著——这种分布更符合社会学习，而不是单一的先天程序。",
+"最终浮现出来的是一个更为审慎的理论。乌鸦似乎拥有一种改造物体的通用技巧，这种技巧由它们自己创造并通过练习加以完善，随后再被当地条件所塑造。「聪明的鸟」和「纯粹本能」这两种说法都无法在数据面前存活。研究者现在构建计算模型，来解释这种灵活性如何可能从相对简单的学习规则中产生，并检验圈养鸟类是否会按照这些模型的预测，对改变后的奖励结构作出反应。"
+ ],
+ qs:[
+  {stem:"Why does the author mention Betty in paragraph 3?",
+   opts:["To show that crows are more intelligent than other birds","To present the result that tested the hypothesis, and the criticism it attracted","To argue that field observation is more reliable than laboratory work","To explain why the 1990s reports were fabricated"],a:1,
+   exp:"修辞目的题问的是「这个例子在论证中做了什么」。Betty 出现在假设提出之后、批评之前，它的功能是承接：先给出检验结果，再引出质疑。A 是对内容的过度概括，C、D 文中没有依据。"},
+  {stem:"According to paragraph 3, what weakened the original interpretation of Betty's behaviour?",
+   opts:["Betty failed most of the trials.","The wire used was too thick to bend.","Wild crows were later seen bending materials while foraging normally.","The study was never published in a journal."],a:2,
+   exp:"直接对应 Analysis of later footage revealed 那一句。注意 A 与 nine of ten trials 直接矛盾，D 与 published in 2002 矛盾——托福事实题的干扰项常常是原文事实的反转。"},
+  {stem:"The word <em>modest</em> in the final paragraph is closest in meaning to",
+   opts:["limited in what it claims","difficult to understand","recently proposed","widely accepted"],a:0,
+   exp:"modest 在学术语境中最常见的义项不是「谦虚的」，而是「不夸大的、规模有限的」。上文刚说过 a significant narrowing of the claims，正好铺垫了这个含义。这类「熟词僻义」是托福词汇题的重点。"},
+  {stem:"What does the variation between populations suggest about hook manufacture?",
+   opts:["It is controlled by a single gene.","It is learned from other birds rather than fully innate.","It occurs only in captivity.","It has no effect on feeding success."],a:1,
+   exp:"原文明确：more consistent with social learning than with a single innate program。选项 B 是对该结论的改写，A 恰好是被否定的那一项。"}
+ ]
+},
+{
+ no:"第 3 篇 / 30 词",
+ title:"The Artificial Leaf",
+ field:"材料科学 · 能源技术",
+ body:[
+"Photosynthesis is often described as the most [[efficient]] [[process]] on Earth, but the description is misleading. A leaf converts less than one percent of the sunlight falling on it into stored chemical energy. Its [[efficiency]] is in fact low. What is remarkable is its [[capacity]] to run on nothing but water, air, and light, at ordinary temperatures, using earth-abundant [[elements|element]] rather than rare metals.",
+"That combination has made the leaf attractive to engineers pursuing artificial photosynthesis. The goal is a [[system]] that uses sunlight to split water into hydrogen and oxygen, [[providing|provide]] a fuel that can be stored and burned without carbon emissions. The core [[technology]] is a semiconductor coated with a catalyst: light striking the semiconductor generates a charge, and the catalyst uses that charge to drive the reaction.",
+"Three [[factors|factor]] limit [[performance]]. The first is stability. The same [[quality]] that makes a catalyst reactive also makes it prone to corrosion, and most prototypes degrade within days. The second is the [[cost]] of materials; early devices relied on platinum, whose price makes large-scale deployment impractical. The third [[issue]] is a mismatch between the [[structure]] of the light-absorbing layer and the [[function]] of the catalytic surface, since the two must be optimized for entirely different conditions.",
+"Recent [[innovations|innovation]] have addressed the first two. Substituting cobalt and nickel compounds for platinum has cut material [[costs|cost]] by more than two orders of magnitude while [[improving|improve]] durability. Protective oxide coatings only a few atoms thick [[enhance]] the lifetime of the semiconductor without blocking light. Neither change [[increases|increase]] raw conversion [[efficiency]], but both [[improve]] the economics — and the economics are what determine whether a laboratory result has practical [[value]].",
+"The most [[innovative]] designs abandon the leaf analogy altogether. One [[strategy]] places the catalyst on living bacteria rather than on an electrode, exploiting the organisms' own [[ability]] to assemble complex molecules. Another [[aspect]] of current work concerns scale: a flat panel is the obvious [[solution]], but particles suspended in water may prove cheaper, since they require no wiring.",
+"Whether any of these [[features|feature]] will [[influence]] energy markets remains unclear. Advocates [[promote]] artificial photosynthesis as a [[potential]] replacement for fossil fuels; sceptics reply that conventional solar panels already deliver electricity far more cheaply. The strongest argument for the technology is not that it outperforms solar panels, but that it yields a storable fuel — a [[benefit]] that batteries still provide poorly."
+ ],
+ zh:[
+"光合作用常被描述为地球上最高效的过程，但这个说法具有误导性。一片叶子把落在它上面的阳光转化为储存化学能的比例不到百分之一。它的效率其实很低。真正了不起的是它的能力：只依靠水、空气和光，在常温下运行，使用地球上储量丰富的元素而非稀有金属。",
+"这一组合让叶子对追求人工光合作用的工程师颇具吸引力。目标是造出一套系统，用阳光把水分解为氢和氧，从而提供一种可以储存、燃烧且不排放碳的燃料。核心技术是一块覆有催化剂的半导体：光照射半导体产生电荷，催化剂再利用这些电荷驱动反应。",
+"有三个因素限制着性能。第一是稳定性。让催化剂具有反应活性的那种性质，同时也让它易受腐蚀，多数原型器件在几天内就会降解。第二是材料成本；早期器件依赖铂，其价格使大规模部署难以实现。第三个问题是吸光层的结构与催化表面的功能之间的不匹配，因为两者必须针对完全不同的条件进行优化。",
+"近期的创新已经解决了前两个问题。用钴和镍的化合物替代铂，把材料成本削减了两个数量级以上，同时提升了耐久性。仅有几个原子厚的保护性氧化物涂层，在不遮挡光线的前提下增强了半导体的寿命。这两项改变都没有提高原始转化效率，但都改善了经济性——而经济性正是决定一项实验室成果是否具有实用价值的因素。",
+"最具创新性的设计干脆放弃了叶子这个类比。一种策略把催化剂置于活细菌之上而非电极之上，利用生物体自身合成复杂分子的能力。当前工作的另一个方面涉及规模：平板是显而易见的解决方案，但悬浮在水中的颗粒可能更便宜，因为它们不需要布线。",
+"这些特性中是否会有哪一项影响能源市场，目前仍不清楚。支持者把人工光合作用推介为化石燃料的潜在替代品；怀疑者则回应说，传统太阳能电池板供电的成本已经低得多。支持这项技术的最有力论据，并不是它胜过太阳能电池板，而是它产出一种可储存的燃料——这是电池至今仍难以很好提供的一项好处。"
+ ],
+ qs:[
+  {stem:"Why does the author say the common description of photosynthesis is misleading?",
+   opts:["Leaves do not actually store chemical energy.","Its energy conversion rate is low; what is impressive is the conditions it operates under.","Photosynthesis requires rare metals that are not widely available.","Artificial systems have already surpassed it in every respect."],a:1,
+   exp:"第一段的结构是「否定—修正」：先说效率其实很低，再用 What is remarkable is… 指出真正值得称道的是运行条件。B 完整覆盖了这两半。只答前半或只答后半都不够。"},
+  {stem:"The phrase <em>prone to</em> in paragraph 3 is closest in meaning to",
+   opts:["protected from","likely to suffer from","designed to resist","unaffected by"],a:1,
+   exp:"prone to = 易于遭受（负面结果）。句子后半 most prototypes degrade within days 给出了方向：这是坏事。A、C、D 三个干扰项都把方向弄反了——词汇题先判方向，往往就能排掉多数选项。"},
+  {stem:"According to paragraph 4, replacing platinum with cobalt and nickel is important mainly because it",
+   opts:["raises the conversion efficiency of the device","makes the technology economically viable","eliminates the need for a semiconductor","allows the device to work without sunlight"],a:1,
+   exp:"原文直接说 Neither change increases raw conversion efficiency, but both improve the economics。A 是被明确否定的内容，属于高危干扰项：它用了原文出现过的词，但站在了反面。"},
+  {stem:"What does the author present as the strongest case for artificial photosynthesis?",
+   opts:["It is cheaper than solar panels.","It produces a fuel that can be stored.","It uses the same catalysts as living leaves.","It requires no water."],a:1,
+   exp:"末句的 not X, but Y 结构直接给出答案：优势不在于胜过太阳能板，而在于产出可储存的燃料。A 恰好被 sceptics 那句否定。"}
+ ]
+}
+];
+
+/* ---------- render ---------- */
+const tabsEl=document.getElementById('tabs'),mainEl=document.getElementById('main'),
+      noteEl=document.getElementById('note'),asideEl=document.getElementById('aside');
+let cur=0, seen=[new Set(),new Set(),new Set()], showZh=false, openBtn=null;
+
+P.forEach((p,i)=>{
+  const b=document.createElement('button');
+  b.className='tab chrome';b.setAttribute('role','tab');b.dataset.i=i;
+  b.innerHTML=`${p.title}<span class="n">${p.no}</span>`;
+  b.onclick=()=>{cur=i;openBtn=null;render();window.scrollTo(0,0)};
+  tabsEl.appendChild(b);
+});
+
+function markup(s){
+  return s.replace(/\[\[(.+?)\]\]/g,(m,inner)=>{
+    const [disp,key]=inner.includes('|')?inner.split('|'):[inner,inner];
+    return `<button class="w" data-k="${key}" aria-expanded="false">${disp}</button>`;
+  });
+}
+
+function render(){
+  [...tabsEl.children].forEach((t,i)=>t.setAttribute('aria-selected',i===cur));
+  const p=P[cur];
+  const words=[...new Set([...p.body.join(' ').matchAll(/\[\[(.+?)\]\]/g)]
+        .map(m=>{const x=m[1];return x.includes('|')?x.split('|')[1]:x}))];
+
+  let html=`<p class="meta chrome">${p.no}</p><h2>${p.title}</h2><p class="field">${p.field}</p>`;
+  html+=`<div class="toolbar">
+    <button class="btn chrome" id="zhBtn" aria-pressed="${showZh}">${showZh?'隐藏译文':'显示译文'}</button>
+    <button class="btn chrome" id="resetBtn">重置勾选</button>
+    <span class="count chrome" id="cnt"></span></div><article>`;
+  p.body.forEach((para,i)=>{
+    html+=`<p>${markup(para)}</p><div class="zh chrome" ${showZh?'':'hidden'}>${p.zh[i]}</div>`;
+  });
+  html+=`</article>`;
+
+  html+=`<details class="list"><summary>本篇目标词 ${words.length} 个（点开对照自测）</summary><div class="grid">`;
+  words.forEach(w=>{const v=V[w];html+=`<span><b>${w}</b> ${v?v[2]:''}</span>`});
+  html+=`</div></details>`;
+
+  html+=`<section class="qs"><h3 class="chrome">阅读题 · ${p.qs.length} 道</h3>`;
+  p.qs.forEach((q,qi)=>{
+    html+=`<div class="q"><p class="stem">${qi+1}. ${q.stem}</p>`;
+    q.opts.forEach((o,oi)=>{
+      html+=`<button class="opt" data-q="${qi}" data-o="${oi}">${String.fromCharCode(65+oi)}. ${o}</button>`;
+    });
+    html+=`<div class="exp chrome" id="exp-${qi}" hidden>${q.exp}</div></div>`;
+  });
+  html+=`</section>`;
+  mainEl.innerHTML=html;
+
+  document.getElementById('zhBtn').onclick=()=>{showZh=!showZh;render()};
+  document.getElementById('resetBtn').onclick=()=>{seen[cur]=new Set();render()};
+  updateCount(words.length);
+
+  mainEl.querySelectorAll('.w').forEach(b=>{
+    if(seen[cur].has(b.dataset.k))b.classList.add('seen');
+    b.onclick=()=>showNote(b,words.length);
+  });
+  mainEl.querySelectorAll('.opt').forEach(b=>{
+    b.onclick=()=>{
+      const qi=+b.dataset.q,oi=+b.dataset.o,q=P[cur].qs[qi];
+      mainEl.querySelectorAll(`.opt[data-q="${qi}"]`).forEach(x=>{
+        x.disabled=true;
+        if(+x.dataset.o===q.a)x.classList.add('right');
+      });
+      if(oi!==q.a)b.classList.add('wrong');
+      document.getElementById('exp-'+qi).hidden=false;
+    };
+  });
+}
+
+function updateCount(total){
+  const c=document.getElementById('cnt');
+  if(c)c.textContent=`已查看 ${seen[cur].size} / ${total} 词`;
+}
+
+function showNote(btn,total){
+  if(openBtn&&openBtn!==btn)openBtn.setAttribute('aria-expanded','false');
+  btn.setAttribute('aria-expanded','true');openBtn=btn;
+  const k=btn.dataset.k,v=V[k];
+  seen[cur].add(k);btn.classList.add('seen');updateCount(total);
+  if(!v){noteEl.innerHTML='<p class="empty">未找到该词条。</p>';return}
+  const colls=(C[k]||[]).map(x=>`<li>${x}</li>`).join('');
+  noteEl.innerHTML=`
+    <p class="hw">${k}</p>
+    <p class="ipa">${v[0]}</p>
+    <span class="pos">${v[1]}</span>
+    <p class="def">${v[2]}</p>
+    <p class="lab">文中形式</p>
+    <p class="ex">${btn.textContent}</p>
+    ${colls?`<p class="lab">高频搭配</p><ul class="colls">${colls}</ul>`:''}`;
+  asideEl.classList.add('open');
+}
+document.getElementById('closeNote').onclick=()=>{
+  asideEl.classList.remove('open');
+  if(openBtn){openBtn.setAttribute('aria-expanded','false');openBtn=null}
+};
+render();
+</script>
+</body>
+</html>
